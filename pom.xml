@@ -6,6 +6,27 @@
   <name>PhonShell</name>
   <description>Interactive scripting console for Phon.</description>
   
+  <licenses>
+    <license>
+      <name>GNU GPL v3.0+</name>
+      <distribution>repo</distribution>
+      <url>http://www.gnu.org/copyleft/gpl.html</url>
+    </license>
+  </licenses>
+  
+  <distributionManagement>
+    <repository>
+      <id>phon.ca-release</id>
+      <name>Phon Release</name>
+      <url>https://www.phon.ca/artifacts/libs-release-local</url>
+    </repository>
+    <snapshotRepository>
+      <id>phon.ca-snapshot</id>
+      <name>Phon Snapshot</name>
+      <url>https://www.phon.ca/artifacts/libs-snapshot-local</url>
+    </snapshotRepository>
+  </distributionManagement>
+  
   <repositories>
     <repository>
       <snapshots>
@@ -16,7 +37,7 @@
       <url>https://www.phon.ca/artifacts/libs-release</url>
     </repository>
     <repository>
-      <snapshots />
+      <snapshots/>
       <id>snapshots</id>
       <name>libs-snapshot</name>
       <url>https://www.phon.ca/artifacts/libs-snapshot</url>
@@ -32,7 +53,7 @@
       <url>https://www.phon.ca/artifacts/plugins-release</url>
     </pluginRepository>
     <pluginRepository>
-      <snapshots />
+      <snapshots/>
       <id>snapshots</id>
       <name>plugins-snapshot</name>
       <url>https://www.phon.ca/artifacts/plugins-snapshot</url>
@@ -79,30 +100,6 @@
           <target>1.6</target>
         </configuration>
       </plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.0</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-					    <configuration>
-					        <transformers>
-					            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-					        </transformers>
-					      <artifactSet>
-					        <excludes>
-					          <exclude>ca.phon:phon:jar:</exclude>
-					          <exclude>org.swinglabs:swingx:jar:</exclude>
-					        </excludes>
-					      </artifactSet>
-					    </configuration>
-					</execution>
-				</executions>
-			</plugin>
     </plugins>
   </build>
 </project>
