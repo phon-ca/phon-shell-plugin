@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>ca.phon</groupId>
   <artifactId>phon-shell-plugin</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1-SNAPSHOT</version>
   <name>PhonShell</name>
   <description>Interactive scripting console for Phon.</description>
   
