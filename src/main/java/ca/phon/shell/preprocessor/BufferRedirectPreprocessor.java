@@ -51,13 +51,7 @@ public class BufferRedirectPreprocessor implements JissPreprocessor {
 						}
 					}
 					bufferRef.getAndSet((panel != null ? panel.getLogBuffer() : null));
-					if(!window.isVisible()) {
-						window.setSize(500, 600);
-						window.centerWindow();
-						window.setVisible(true);
-					} else {
-						window.requestFocus();
-					}
+					window.showWindow();
 				}
 			};
 			if(SwingUtilities.isEventDispatchThread())
