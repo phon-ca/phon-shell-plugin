@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>ca.phon</groupId>
   <artifactId>phon-shell-plugin</artifactId>
-  <version>1</version>
+  <version>2</version>
   <name>PhonShell</name>
   <description>Interactive scripting console for Phon.</description>
   
@@ -64,27 +64,27 @@
     <dependency>
       <groupId>ca.phon</groupId>
       <artifactId>phon-app</artifactId>
-      <version>1.7.0beta1</version>
+      <version>2.0beta5</version>
     </dependency>
     <dependency>
       <groupId>ca.hedlund</groupId>
       <artifactId>jiss-core</artifactId>
-      <version>0.1</version>
+      <version>0.2</version>
     </dependency>
     <dependency>
       <groupId>ca.hedlund</groupId>
       <artifactId>jiss-blocks</artifactId>
-      <version>0.1</version>
+      <version>0.2</version>
     </dependency>
     <dependency>
       <groupId>ca.hedlund</groupId>
       <artifactId>jiss-history</artifactId>
-      <version>0.1</version>
+      <version>0.2</version>
     </dependency>
     <dependency>
       <groupId>ca.hedlund</groupId>
       <artifactId>jiss-rsyntaxarea-input</artifactId>
-      <version>0.1</version>
+      <version>0.2</version>
     </dependency>
   </dependencies>
   
