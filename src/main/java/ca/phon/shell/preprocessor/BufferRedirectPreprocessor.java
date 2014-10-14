@@ -1,5 +1,7 @@
 package ca.phon.shell.preprocessor;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -21,16 +23,16 @@ public class BufferRedirectPreprocessor implements JissPreprocessor {
 	private static final Logger LOGGER = Logger
 			.getLogger(BufferRedirectPreprocessor.class.getName());
 	
-	private final static String BUFFER_REGEX = ".* (>{1,2}) ([a-zA-Z][a-zA-Z0-9-.]+)$";
+	private final static String BUFFER_REGEX = ".*\\p{Space}((>{1,2})\\p{Space}([a-zA-Z][a-zA-Z0-9-.]+))$";
 
 	@Override
 	public boolean preprocessCommand(JissModel jissModel, String orig,
 			StringBuffer cmd) {
-		final Pattern pattern = Pattern.compile(BUFFER_REGEX, Pattern.DOTALL);
+		final Pattern pattern = Pattern.compile(BUFFER_REGEX, Pattern.DOTALL | Pattern.MULTILINE);
 		final Matcher matcher = pattern.matcher(orig);
 		if(matcher.matches()) {
-			final String type = matcher.group(1);
-			final String name = matcher.group(2);
+			final String type = matcher.group(2);
+			final String name = matcher.group(3);
 			
 			final AtomicReference<LogBuffer> bufferRef = new AtomicReference<LogBuffer>();
 			final Runnable onEDT = new Runnable() {
@@ -68,10 +70,15 @@ public class BufferRedirectPreprocessor implements JissPreprocessor {
 				}
 			
 			final LogBuffer logBuffer = bufferRef.get();
-			jissModel.getScriptContext().setWriter(new PrintWriter(logBuffer.getStdOutStream()));
-			jissModel.getScriptContext().setErrorWriter(new PrintWriter(logBuffer.getStdErrStream()));
+			try {
+				jissModel.getScriptContext().setWriter(new OutputStreamWriter(logBuffer.getStdOutStream(), "UTF-8"));
+				jissModel.getScriptContext().setErrorWriter(new OutputStreamWriter(logBuffer.getStdErrStream(), "UTF-8"));
+			} catch (IOException e) {
+				LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
+			}
 			
-			cmd.delete(matcher.start(1), orig.length());
+			if(cmd.toString().endsWith(matcher.group(1)))
+				cmd.delete(matcher.start(1), cmd.length());
 		}
 		
 		return false;
