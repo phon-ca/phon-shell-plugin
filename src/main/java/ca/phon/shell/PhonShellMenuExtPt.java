@@ -55,6 +55,8 @@ public class PhonShellMenuExtPt implements IPluginExtensionPoint<IPluginMenuFilt
 				pluginsMenu.addSeparator();
 			}
 			pluginsMenu.add(pluginItem);
+			
+			
 		}
 	}
 }
