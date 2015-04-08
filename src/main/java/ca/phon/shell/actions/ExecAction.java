@@ -67,7 +67,7 @@ public class ExecAction extends PhonShellAction {
 				
 				final File scriptFile = new File(arg0.getDialogData().toString());
 				
-				final String cmd = "::exec \"" + scriptFile.getAbsolutePath() + "\" > " + scriptFile.getName();
+				final String cmd = "::exec \"" + scriptFile.getAbsolutePath() + "\"";
 				(new RunCommand(console, cmd)).runCommand();
 			}
 			
