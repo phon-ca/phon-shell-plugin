@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
+import javax.swing.SwingUtilities;
 
 import ca.hedlund.jiss.ui.JissConsole;
 import ca.hedlund.jiss.ui.bindings.RunCommand;
@@ -67,8 +68,10 @@ public class ExecAction extends PhonShellAction {
 				
 				final File scriptFile = new File(arg0.getDialogData().toString());
 				
-				final String cmd = "::exec \"" + scriptFile.getAbsolutePath() + "\"";
-				(new RunCommand(console, cmd)).runCommand();
+                final String cmd = "::exec \"" + scriptFile.getAbsolutePath() + "\" > " + scriptFile.getName();
+				SwingUtilities.invokeLater( () -> {
+					(new RunCommand(console, cmd)).runCommand();
+				});
 			}
 			
 		});

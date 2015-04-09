@@ -69,6 +69,9 @@ public class PhonShellWindow extends CommonModuleFrame {
 		console.setBackground(Color.black);
 		console.setCaretColor(Color.white);
 		
+		console.setDragEnabled(true);
+		console.setTransferHandler(new ScriptTransferHandler(this));
+		
 		final JScrollPane sp = new JScrollPane(console);
 		
 		add(sp, BorderLayout.CENTER);
