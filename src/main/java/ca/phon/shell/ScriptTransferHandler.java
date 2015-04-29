@@ -1,6 +1,8 @@
 package ca.phon.shell;
 
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
 
@@ -61,7 +63,12 @@ public class ScriptTransferHandler extends FileTransferHandler {
 				}
 			}
 		} catch (IOException e) {
-			return false;
+			try {
+				final String txt = t.getTransferData(DataFlavor.stringFlavor).toString();
+				getWindow().getConsole().replaceSelection(txt);
+			} catch (UnsupportedFlavorException | IOException e1) {
+				e.printStackTrace();
+			}
 		}
 		
 		return false;

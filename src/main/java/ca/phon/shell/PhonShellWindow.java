@@ -12,10 +12,8 @@ import javax.swing.JScrollPane;
 
 import ca.hedlund.jiss.JissModel;
 import ca.hedlund.jiss.ui.JissConsole;
-import ca.phon.query.report.io.ScriptContainer;
 import ca.phon.shell.actions.ExecAction;
 import ca.phon.ui.CommonModuleFrame;
-import ca.phon.ui.decorations.DialogHeader;
 
 
 public class PhonShellWindow extends CommonModuleFrame {
