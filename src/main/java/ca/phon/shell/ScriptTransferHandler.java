@@ -1,5 +1,6 @@
 package ca.phon.shell;
 
+import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -72,6 +73,12 @@ public class ScriptTransferHandler extends FileTransferHandler {
 		}
 		
 		return false;
+	}
+
+	@Override
+	public void exportToClipboard(JComponent comp, Clipboard clip, int action)
+			throws IllegalStateException {
+		super.exportToClipboard(comp, clip, action);
 	}
 	
 }

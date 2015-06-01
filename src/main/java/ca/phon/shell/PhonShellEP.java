@@ -4,6 +4,7 @@ import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
+import ca.hedlund.jiss.ui.bindings.RunCommand;
 import ca.phon.plugin.IPluginEntryPoint;
 import ca.phon.plugin.PhonPlugin;
 
@@ -37,6 +38,7 @@ public class PhonShellEP implements IPluginEntryPoint {
 				
 				if(arg0.get(SCRIPT_PROP) != null) {
 					final String cmd = "::exec \"" + arg0.get(SCRIPT_PROP) + "\"";
+					(new RunCommand(phonShell.getConsole(), cmd)).runCommand();
 				}
 			}
 		};

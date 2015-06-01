@@ -12,6 +12,8 @@ import javax.swing.JScrollPane;
 
 import ca.hedlund.jiss.JissModel;
 import ca.hedlund.jiss.ui.JissConsole;
+import ca.phon.project.Project;
+import ca.phon.session.Session;
 import ca.phon.shell.actions.ExecAction;
 import ca.phon.ui.CommonModuleFrame;
 
@@ -47,6 +49,10 @@ public class PhonShellWindow extends CommonModuleFrame {
 		setLayout(new BorderLayout());
 		
 		final CommonModuleFrame cmf = CommonModuleFrame.getCurrentFrame();
+		
+		// copy project and session extensions
+		putExtension(Project.class, cmf.getExtension(Project.class));
+		putExtension(Session.class, cmf.getExtension(Session.class));
 		
 		model = new JissModel(PhonShellWindow.class.getClassLoader());
 		if(cmf != null) {
