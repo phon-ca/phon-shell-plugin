@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Phon - An open source tool for research in phonology.
+    Copyright (C) 2015 Greg Hedlund and Yvan Rose, Memorial University <https://phon.ca>
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    xmlns="https://phon.ca/ns/scriptlibrary" targetNamespace="https://phon.ca/ns/scriptlibrary">
+
+    <xs:element name="script" type="ScriptType"/>
+
+    <xs:element name="group" type="GroupType"/>
+
+    <xs:element name="library">
+        <xs:complexType mixed="false">
+            <xs:sequence>
+                <xs:element name="root" type="GroupType" minOccurs="1" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Root group for the library</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="GroupType" mixed="false">
+        <xs:annotation>
+            <xs:documentation>Named group of scripts, may be nested.</xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="group"/>
+            <xs:element ref="script"/>
+        </xs:choice>
+        <xs:attribute name="name" type="nonEmptyStringType" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="ScriptType" mixed="false">
+        <xs:annotation>
+            <xs:documentation>Entry for a script</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="author" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="date" type="xs:date" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="license" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Optional description</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="includeWindow" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Class name of window where this script will appear. If no
+                        window class is specifed, the script will appear in any
+                        window.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="excludeWindow" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Class name of window where this script will not
+                        appear.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute type="nonEmptyStringType" name="name" use="required">
+            <xs:annotation>
+                <xs:documentation>Name of script as it appears in the application
+                    UI.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:anyURI" name="href" use="required">
+            <xs:annotation>
+                <xs:documentation>Location of script file.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:int" name="version" use="required">
+            <xs:annotation>
+                <xs:documentation>The version number of the script used for update
+                    checks.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="nonEmptyStringType" name="lang" use="optional">
+            <xs:annotation>
+                <xs:documentation>Optional language declaration. By default this is idenfied by the
+                    script extension. Must be a language available to the PhonShell
+                    context.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:boolean" name="useBuffer" default="false">
+            <xs:annotation>
+                <xs:documentation>Should the data from the script be printed in the console or in a
+                    new buffer with the same name as the script.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:simpleType name="nonEmptyStringType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>
