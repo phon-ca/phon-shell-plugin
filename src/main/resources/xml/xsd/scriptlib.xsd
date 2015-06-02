@@ -26,24 +26,38 @@
     <xs:element name="library">
         <xs:complexType mixed="false">
             <xs:sequence>
-                <xs:element name="root" type="GroupType" minOccurs="1" maxOccurs="1">
+                <xs:element name="root" minOccurs="1" maxOccurs="1">
                     <xs:annotation>
                         <xs:documentation>Root group for the library</xs:documentation>
                     </xs:annotation>
+                    <xs:complexType mixed="false">
+                        <xs:complexContent>
+                            <xs:extension base="FolderType">
+                            	<xs:attribute name="href" type="xs:anyURI" use="required"/>
+                            </xs:extension>
+                        </xs:complexContent>
+                    </xs:complexType>
                 </xs:element>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
+    
+    <xs:complexType name="FolderType" mixed="false" abstract="true">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="group"/>
+            <xs:element ref="script"/>
+        </xs:choice>
+    </xs:complexType>
 
     <xs:complexType name="GroupType" mixed="false">
         <xs:annotation>
             <xs:documentation>Named group of scripts, may be nested.</xs:documentation>
         </xs:annotation>
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element ref="group"/>
-            <xs:element ref="script"/>
-        </xs:choice>
-        <xs:attribute name="name" type="nonEmptyStringType" use="required"/>
+        <xs:complexContent>
+            <xs:extension base="FolderType">
+                <xs:attribute name="name" type="nonEmptyStringType" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="ScriptType" mixed="false">
