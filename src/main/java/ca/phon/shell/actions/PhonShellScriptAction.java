@@ -15,13 +15,20 @@ import ca.phon.ui.CommonModuleFrame;
  */
 public class PhonShellScriptAction extends HookableAction {
 
-	private final File scriptFile;
+	private final String scriptLocation;
 	
-	public PhonShellScriptAction(File scriptFile) {
-		this.scriptFile = scriptFile;
-		
-		putValue(NAME, scriptFile.getName());
-		putValue(SHORT_DESCRIPTION, scriptFile.getAbsolutePath());
+	private boolean useBuffer = false;
+	
+	public PhonShellScriptAction(String scriptLocation) {
+		this.scriptLocation = scriptLocation;
+	}
+	
+	public boolean isUseBuffer() {
+		return this.useBuffer;
+	}
+	
+	public void setUseBuffer(boolean useBuffer) {
+		this.useBuffer = useBuffer;
 	}
 	
 	@Override
@@ -37,7 +44,16 @@ public class PhonShellScriptAction extends HookableAction {
 			window.setVisible(true);
 		}
 		
-		(new RunCommand(window.getConsole(), "::exec \"" + scriptFile.getAbsolutePath() + "\"")).runCommand();
+		(new RunCommand(window.getConsole(), createExecCommand())).runCommand();
 	}
 
+	public String createExecCommand() {
+		final StringBuilder sb = new StringBuilder();
+		sb.append("::exec ").append('\"').append(scriptLocation).append('\"');
+		if(useBuffer) {
+			sb.append('>').append(getValue(NAME));
+		}
+		return sb.toString();
+	}
+	
 }

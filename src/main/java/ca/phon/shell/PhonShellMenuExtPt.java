@@ -145,7 +145,11 @@ public class PhonShellMenuExtPt implements IPluginExtensionPoint<IPluginMenuFilt
 			} else {
 				final String ext = getExtension(file);
 				if(exts.contains(ext)) {
-					JMenuItem scriptItem = new JMenuItem(new PhonShellScriptAction(file));
+					final PhonShellScriptAction act = new PhonShellScriptAction(file.getAbsolutePath());
+					act.putValue(PhonShellScriptAction.NAME, file.getName());
+					act.putValue(PhonShellScriptAction.SHORT_DESCRIPTION, file.getAbsolutePath());
+					act.setUseBuffer(true);
+					JMenuItem scriptItem = new JMenuItem(act);
 					menu.add(scriptItem);
 				}
 			}
