@@ -1,7 +1,6 @@
 package ca.phon.shell.actions;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 
 import ca.hedlund.jiss.ui.bindings.RunCommand;
 import ca.phon.app.hooks.HookableAction;
@@ -51,7 +50,7 @@ public class PhonShellScriptAction extends HookableAction {
 		final StringBuilder sb = new StringBuilder();
 		sb.append("::exec ").append('\"').append(scriptLocation).append('\"');
 		if(useBuffer) {
-			sb.append('>').append(getValue(NAME));
+			sb.append(" > ").append(getValue(NAME));
 		}
 		return sb.toString();
 	}
