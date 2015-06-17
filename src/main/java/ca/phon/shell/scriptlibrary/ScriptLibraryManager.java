@@ -68,22 +68,23 @@ public class ScriptLibraryManager {
 	public void buildMenu(MenuContainer menu) {
 		final Library library = getLibrary();
 		if(library == null) return;
-		buildMenuForFolder(menu, library.getRoot());
+		buildMenuForFolder(menu, library.getRoot().getHref(), library.getRoot());
 	}
 	
-	public void buildMenuForFolder(MenuContainer menu, FolderType folderType) {
+	public void buildMenuForFolder(MenuContainer menu, String rootHref, FolderType folderType) {
 		for(Object obj:folderType.getGroupOrScript()) {
 			if(obj instanceof GroupType) {
 				final GroupType grp = (GroupType)obj;
 				final JMenu grpMenu = new JMenu(grp.getName());
-				buildMenuForFolder(grpMenu, grp);
+				buildMenuForFolder(grpMenu, rootHref, grp);
 				addToContainer(menu, grpMenu);
 			} else {
 				final ScriptType st = (ScriptType)obj;
 				
-				final PhonShellScriptAction act = new PhonShellScriptAction(st.getHref());
+				final PhonShellScriptAction act = new PhonShellScriptAction(rootHref + st.getHref());
 				act.putValue(PhonShellScriptAction.NAME, st.getName());
 				act.putValue(PhonShellScriptAction.SHORT_DESCRIPTION, st.getDescription());
+				act.setUseBuffer(st.isUseBuffer());
 				final JMenuItem menuItem = new JMenuItem(act);
 				addToContainer(menu, menuItem);
 			}
