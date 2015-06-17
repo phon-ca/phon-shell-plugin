@@ -1,17 +1,26 @@
 package ca.phon.shell;
 
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
+
+import org.jdesktop.swingx.JXBusyLabel;
 
 import ca.phon.plugin.IPluginExtensionFactory;
 import ca.phon.plugin.IPluginExtensionPoint;
@@ -20,9 +29,13 @@ import ca.phon.plugin.PhonPlugin;
 import ca.phon.plugin.PluginAction;
 import ca.phon.project.Project;
 import ca.phon.shell.actions.PhonShellScriptAction;
+import ca.phon.shell.scriptlibrary.Library;
+import ca.phon.shell.scriptlibrary.ScriptLibraryManager;
 import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.action.PhonUIAction;
+import ca.phon.ui.toast.ToastFactory;
 import ca.phon.util.PrefHelper;
+import ca.phon.worker.PhonWorker;
 
 @PhonPlugin(name="PhonShell",
 			author="Greg J. Hedlund",
@@ -94,8 +107,53 @@ public class PhonShellMenuExtPt implements IPluginExtensionPoint<IPluginMenuFilt
 				}
 			});
 			pluginsMenu.add(scriptsMenu);
+			
+			final JMenu scriptLibrary = new JMenu("Online Script Library");
+			scriptLibrary.addMenuListener(new MenuListener() {
+				
+				@Override
+				public void menuSelected(MenuEvent e) {
+					setupScriptLibraryMenu(scriptLibrary);
+				}
+				
+				@Override
+				public void menuDeselected(MenuEvent e) {
+					
+				}
+				
+				@Override
+				public void menuCanceled(MenuEvent e) {
+					
+				}
+			});
+			pluginsMenu.add(scriptLibrary);
 		}
 		
+	}
+	
+	private void setupScriptLibraryMenu(JMenu scriptLibraryMenu) {
+		scriptLibraryMenu.removeAll();
+		
+		final ScriptLibraryManager manager = new ScriptLibraryManager();
+		
+		final Runnable onEDTThread = () -> {
+			scriptLibraryMenu.removeAll();
+			manager.buildMenu(scriptLibraryMenu);
+		};
+		
+		Runnable onBgThread = () -> {
+			try {
+				manager.loadLibrary();
+				
+//				SwingUtilities.invokeLater(onEDTThread);
+			} catch (IOException e) {
+				Toolkit.getDefaultToolkit().beep();
+				ToastFactory.makeToast(e.getMessage()).start(scriptLibraryMenu);
+			}
+		};
+		onBgThread.run();
+		onEDTThread.run();
+//		PhonWorker.getInstance().invokeLater(onBgThread);
 	}
 	
 	private void setupScriptsMenu(Window window, JMenu scriptsMenu) {

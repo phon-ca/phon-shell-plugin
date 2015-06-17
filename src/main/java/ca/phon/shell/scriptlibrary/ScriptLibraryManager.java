@@ -80,10 +80,12 @@ public class ScriptLibraryManager {
 				addToContainer(menu, grpMenu);
 			} else {
 				final ScriptType st = (ScriptType)obj;
-				final JMenuItem menuItem = new JMenuItem();
 				
 				final PhonShellScriptAction act = new PhonShellScriptAction(st.getHref());
-				
+				act.putValue(PhonShellScriptAction.NAME, st.getName());
+				act.putValue(PhonShellScriptAction.SHORT_DESCRIPTION, st.getDescription());
+				final JMenuItem menuItem = new JMenuItem(act);
+				addToContainer(menu, menuItem);
 			}
 		}
 	}
