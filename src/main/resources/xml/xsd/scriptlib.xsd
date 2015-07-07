@@ -104,6 +104,8 @@
                     checks.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute type="nonEmptyStringType" name="minVersion" use="optional"/>
+        <xs:attribute type="nonEmptyStringType" name="maxVersion" use="optional"/>
         <xs:attribute type="nonEmptyStringType" name="lang" use="optional">
             <xs:annotation>
                 <xs:documentation>Optional language declaration. By default this is idenfied by the
