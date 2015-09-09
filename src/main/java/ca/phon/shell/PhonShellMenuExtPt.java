@@ -42,6 +42,8 @@ public class PhonShellMenuExtPt implements IPluginExtensionPoint<IPluginMenuFilt
 	final private static String PROJECT_SCRIPT_FOLDER =
 			"__res" + File.separator + "PhonShell";
 	
+	private static ScriptLibraryManager libraryManager = new ScriptLibraryManager();
+	
 	@Override
 	public Class<?> getExtensionType() {
 		return IPluginMenuFilter.class;
@@ -125,26 +127,23 @@ public class PhonShellMenuExtPt implements IPluginExtensionPoint<IPluginMenuFilt
 	private void setupScriptLibraryMenu(final Window owner, final JMenu scriptLibraryMenu) {
 		scriptLibraryMenu.removeAll();
 		
-		final ScriptLibraryManager manager = new ScriptLibraryManager();
-		
 		final Runnable onEDTThread = () -> {
 			scriptLibraryMenu.removeAll();
-			manager.buildMenu(owner, scriptLibraryMenu);
+			libraryManager.buildMenu(owner, scriptLibraryMenu);
 		};
 		
 		Runnable onBgThread = () -> {
-			try {
-				manager.loadLibrary();
-				
-//				SwingUtilities.invokeLater(onEDTThread);
-			} catch (IOException e) {
-				Toolkit.getDefaultToolkit().beep();
-				ToastFactory.makeToast(e.getMessage()).start(scriptLibraryMenu);
+			if(libraryManager.getLibrary() == null) {
+				try {
+					libraryManager.loadLibrary();
+				} catch (IOException e) {
+					Toolkit.getDefaultToolkit().beep();
+					ToastFactory.makeToast(e.getMessage()).start(scriptLibraryMenu);
+				}
 			}
 		};
 		onBgThread.run();
 		onEDTThread.run();
-//		PhonWorker.getInstance().invokeLater(onBgThread);
 	}
 	
 	private void setupScriptsMenu(Window window, JMenu scriptsMenu) {
