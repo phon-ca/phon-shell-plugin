@@ -1,31 +1,19 @@
 package ca.phon.shell;
 
-import java.awt.Toolkit;
 import java.awt.Window;
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
+import javax.script.*;
+import javax.swing.*;
+import javax.swing.event.*;
 
-import ca.phon.plugin.IPluginExtensionFactory;
-import ca.phon.plugin.IPluginExtensionPoint;
-import ca.phon.plugin.IPluginMenuFilter;
-import ca.phon.plugin.PhonPlugin;
-import ca.phon.plugin.PluginAction;
+import ca.phon.plugin.*;
 import ca.phon.project.Project;
 import ca.phon.shell.actions.PhonShellScriptAction;
 import ca.phon.shell.scriptlibrary.ScriptLibraryManager;
 import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.action.PhonUIAction;
-import ca.phon.ui.toast.ToastFactory;
 import ca.phon.util.PrefHelper;
 
 @PhonPlugin(name="PhonShell",
@@ -101,50 +89,50 @@ public class PhonShellMenuExtPt implements IPluginExtensionPoint<IPluginMenuFilt
 			});
 			pluginsMenu.add(scriptsMenu);
 			
-			final JMenu scriptLibrary = new JMenu("Online Script Library");
-			scriptLibrary.addMenuListener(new MenuListener() {
-				
-				@Override
-				public void menuSelected(MenuEvent e) {
-					setupScriptLibraryMenu(owner, scriptLibrary);
-				}
-				
-				@Override
-				public void menuDeselected(MenuEvent e) {
-					
-				}
-				
-				@Override
-				public void menuCanceled(MenuEvent e) {
-					
-				}
-			});
-			pluginsMenu.add(scriptLibrary);
+//			final JMenu scriptLibrary = new JMenu("Online Script Library");
+//			scriptLibrary.addMenuListener(new MenuListener() {
+//				
+//				@Override
+//				public void menuSelected(MenuEvent e) {
+//					setupScriptLibraryMenu(owner, scriptLibrary);
+//				}
+//				
+//				@Override
+//				public void menuDeselected(MenuEvent e) {
+//					
+//				}
+//				
+//				@Override
+//				public void menuCanceled(MenuEvent e) {
+//					
+//				}
+//			});
+//			pluginsMenu.add(scriptLibrary);
 		}
 		
 	}
 	
-	private void setupScriptLibraryMenu(final Window owner, final JMenu scriptLibraryMenu) {
-		scriptLibraryMenu.removeAll();
-		
-		final Runnable onEDTThread = () -> {
-			scriptLibraryMenu.removeAll();
-			libraryManager.buildMenu(owner, scriptLibraryMenu);
-		};
-		
-		Runnable onBgThread = () -> {
-			if(libraryManager.getLibrary() == null) {
-				try {
-					libraryManager.loadLibrary();
-				} catch (IOException e) {
-					Toolkit.getDefaultToolkit().beep();
-					ToastFactory.makeToast(e.getMessage()).start(scriptLibraryMenu);
-				}
-			}
-		};
-		onBgThread.run();
-		onEDTThread.run();
-	}
+//	private void setupScriptLibraryMenu(final Window owner, final JMenu scriptLibraryMenu) {
+//		scriptLibraryMenu.removeAll();
+//		
+//		final Runnable onEDTThread = () -> {
+//			scriptLibraryMenu.removeAll();
+//			libraryManager.buildMenu(owner, scriptLibraryMenu);
+//		};
+//		
+//		Runnable onBgThread = () -> {
+//			if(libraryManager.getLibrary() == null) {
+//				try {
+//					libraryManager.loadLibrary();
+//				} catch (IOException e) {
+//					Toolkit.getDefaultToolkit().beep();
+//					ToastFactory.makeToast(e.getMessage()).start(scriptLibraryMenu);
+//				}
+//			}
+//		};
+//		onBgThread.run();
+//		onEDTThread.run();
+//	}
 	
 	private void setupScriptsMenu(Window window, JMenu scriptsMenu) {
 		scriptsMenu.removeAll();
