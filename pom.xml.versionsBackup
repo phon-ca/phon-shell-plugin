@@ -185,5 +185,5 @@
 		</plugin>
     </plugins>
   </build>
-  <version>12</version>
+  <version>11</version>
 </project>
