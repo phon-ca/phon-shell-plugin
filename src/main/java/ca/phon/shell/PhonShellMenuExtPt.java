@@ -14,6 +14,7 @@ import ca.phon.shell.actions.PhonShellScriptAction;
 import ca.phon.shell.scriptlibrary.ScriptLibraryManager;
 import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.action.PhonUIAction;
+import ca.phon.ui.menu.MenuBuilder;
 import ca.phon.util.PrefHelper;
 
 @PhonPlugin(name="PhonShell",
@@ -49,90 +50,35 @@ public class PhonShellMenuExtPt implements IPluginExtensionPoint<IPluginMenuFilt
 
 	@Override
 	public void filterWindowMenu(final Window owner, JMenuBar menuBar) {
-		JMenu pluginsMenu = null;
-		for(int i = 0; i < menuBar.getMenuCount(); i++) {
-			final JMenu menu = menuBar.getMenu(i);
-			if(menu.getText().equals("Plugins")) {
-				pluginsMenu = menu;
-				break;
-			}
-		}
+		final MenuBuilder builder = new MenuBuilder(menuBar);
 		
-		if(pluginsMenu != null) {
-			final PluginAction pluginAction = new PluginAction("PhonShell");
-			pluginAction.putValue(PhonUIAction.NAME, "PhonShell");
-			pluginAction.putValue(PluginAction.SHORT_DESCRIPTION, "Phon interactive scripting shell.");
-			final JMenuItem pluginItem = new JMenuItem(pluginAction);
-			
-			if(pluginsMenu.getItemCount() > 0) {
-				pluginsMenu.addSeparator();
-			}
-			pluginsMenu.add(pluginItem);
-			
-			final JMenu scriptsMenu = new JMenu("PhonShell scripts");
-			scriptsMenu.addMenuListener(new MenuListener() {
-				
-				@Override
-				public void menuSelected(MenuEvent e) {
-					setupScriptsMenu(owner, scriptsMenu);
-				}
-				
-				@Override
-				public void menuDeselected(MenuEvent e) {
-					
-				}
-				
-				@Override
-				public void menuCanceled(MenuEvent e) {
-					
-				}
-			});
-			pluginsMenu.add(scriptsMenu);
-			
-//			final JMenu scriptLibrary = new JMenu("Online Script Library");
-//			scriptLibrary.addMenuListener(new MenuListener() {
-//				
-//				@Override
-//				public void menuSelected(MenuEvent e) {
-//					setupScriptLibraryMenu(owner, scriptLibrary);
-//				}
-//				
-//				@Override
-//				public void menuDeselected(MenuEvent e) {
-//					
-//				}
-//				
-//				@Override
-//				public void menuCanceled(MenuEvent e) {
-//					
-//				}
-//			});
-//			pluginsMenu.add(scriptLibrary);
-		}
+		final PluginAction pluginAction = new PluginAction("PhonShell");
+		pluginAction.putValue(PhonUIAction.NAME, "PhonShell");
+		pluginAction.putValue(PluginAction.SHORT_DESCRIPTION, "Phon interactive scripting shell.");
+		final JMenuItem pluginItem = new JMenuItem(pluginAction);
 		
+		builder.addSeparator("./Tools", "phonshell");
+		builder.addItem("./Tools@phonshell", pluginItem);
+		
+		final JMenu scriptsMenu = builder.addMenu("./Tools", "PhonShell scripts");
+		scriptsMenu.addMenuListener(new MenuListener() {
+			
+			@Override
+			public void menuSelected(MenuEvent e) {
+				setupScriptsMenu(owner, scriptsMenu);
+			}
+			
+			@Override
+			public void menuDeselected(MenuEvent e) {
+				
+			}
+			
+			@Override
+			public void menuCanceled(MenuEvent e) {
+				
+			}
+		});		
 	}
-	
-//	private void setupScriptLibraryMenu(final Window owner, final JMenu scriptLibraryMenu) {
-//		scriptLibraryMenu.removeAll();
-//		
-//		final Runnable onEDTThread = () -> {
-//			scriptLibraryMenu.removeAll();
-//			libraryManager.buildMenu(owner, scriptLibraryMenu);
-//		};
-//		
-//		Runnable onBgThread = () -> {
-//			if(libraryManager.getLibrary() == null) {
-//				try {
-//					libraryManager.loadLibrary();
-//				} catch (IOException e) {
-//					Toolkit.getDefaultToolkit().beep();
-//					ToastFactory.makeToast(e.getMessage()).start(scriptLibraryMenu);
-//				}
-//			}
-//		};
-//		onBgThread.run();
-//		onEDTThread.run();
-//	}
 	
 	private void setupScriptsMenu(Window window, JMenu scriptsMenu) {
 		scriptsMenu.removeAll();
