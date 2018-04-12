@@ -11,7 +11,6 @@ import javax.swing.event.*;
 import ca.phon.plugin.*;
 import ca.phon.project.Project;
 import ca.phon.shell.actions.PhonShellScriptAction;
-import ca.phon.shell.scriptlibrary.ScriptLibraryManager;
 import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.menu.MenuBuilder;
@@ -30,8 +29,6 @@ public class PhonShellMenuExtPt implements IPluginExtensionPoint<IPluginMenuFilt
 	// location of PhonShell scripts in project
 	final private static String PROJECT_SCRIPT_FOLDER =
 			"__res" + File.separator + "PhonShell";
-	
-	private static ScriptLibraryManager libraryManager = new ScriptLibraryManager();
 	
 	@Override
 	public Class<?> getExtensionType() {

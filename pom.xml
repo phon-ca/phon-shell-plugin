@@ -95,38 +95,6 @@
   </dependencies>
   
   <build>
-    <pluginManagement>
-    	<plugins>
-    		<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.codehaus.mojo</groupId>
-										<artifactId>
-											properties-maven-plugin
-										</artifactId>
-										<versionRange>
-											[1.0-alpha-2,)
-										</versionRange>
-										<goals>
-											<goal>set-system-properties</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-    	</plugins>
-    </pluginManagement>
     <plugins>
 		<!-- Setup target/source settings for Java compilation -->
 		<plugin>
@@ -143,68 +111,6 @@
 		  </configuration>
 		</plugin>
 		
-		<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-surefire-plugin</artifactId>
-			<configuration>
-				<reuseForks>false</reuseForks>
-				<forkCount>1</forkCount>
-				<argLine>--add-modules java.xml.bind</argLine>
-			</configuration>
-		</plugin>
-		
-		<plugin>
-			<!-- We use this plugin to ensure that our usage of the maven-jaxb2-plugin 
-				is JDK 8 compatible in absence of a fix for https://java.net/jira/browse/MAVEN_JAXB2_PLUGIN-80. -->
-			<groupId>org.codehaus.mojo</groupId>
-			<artifactId>properties-maven-plugin</artifactId>
-			<version>1.0-alpha-2</version>
-			<executions>
-				<execution>
-					<id>set-additional-system-properties</id>
-					<goals>
-						<goal>set-system-properties</goal>
-					</goals>
-				</execution>
-			</executions>
-			<configuration>
-				<properties>
-					<property>
-						<name>javax.xml.accessExternalSchema</name>
-						<value>file,http</value>
-					</property>
-				</properties>
-			</configuration>
-		</plugin>
-      
-     	<plugin>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf-xjc-plugin</artifactId>
-				<configuration>
-					<extensions>
-						<extension>org.apache.cxf.xjcplugins:cxf-xjc-dv:2.3.0</extension>
-					</extensions>
-				</configuration>
-				<executions>
-					<execution>
-						<id>generate-sources</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>xsdtojava</goal>
-						</goals>
-						<configuration>
-							<sourceRoot>${basedir}/target/generated-sources/xjc</sourceRoot>
-							<xsdOptions>
-								<xsdOption>
-									<xsd>${basedir}/src/main/resources/xml/xsd/scriptlib.xsd</xsd>
-									<packagename>ca.phon.shell.scriptlibrary</packagename>
-									<bindingFile>${basedir}/src/main/resources/xml/xjb/scriptlib.xjb</bindingFile>
-								</xsdOption>
-							</xsdOptions>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
     </plugins>
   </build>
   <version>14</version>
