@@ -59,31 +59,40 @@
     </pluginRepository>
   </pluginRepositories>
   
+  <properties>
+	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<project.build.sourceVersion>11</project.build.sourceVersion>
+	<project.build.targetVersion>11</project.build.targetVersion>
+	
+	<ca.phon.version>3.0.2-SNAPSHOT</ca.phon.version>
+	<ca.hedlund.jiss.version>1.0</ca.hedlund.jiss.version>
+  </properties>
+  
   <dependencies>
     <dependency>
       <groupId>ca.phon</groupId>
       <artifactId>phon-app</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
+      <version>${ca.phon.version}</version>
     </dependency>
     <dependency>
       <groupId>ca.hedlund</groupId>
       <artifactId>jiss-core</artifactId>
-      <version>0.6</version>
+      <version>${ca.hedlund.jiss.version}</version>
     </dependency>
     <dependency>
       <groupId>ca.hedlund</groupId>
       <artifactId>jiss-blocks</artifactId>
-      <version>0.6</version>
+      <version>${ca.hedlund.jiss.version}</version>
     </dependency>
     <dependency>
       <groupId>ca.hedlund</groupId>
       <artifactId>jiss-history</artifactId>
-      <version>0.6</version>
+      <version>${ca.hedlund.jiss.version}</version>
     </dependency>
     <dependency>
       <groupId>ca.hedlund</groupId>
       <artifactId>jiss-rsyntaxarea-input</artifactId>
-      <version>0.6</version>
+      <version>${ca.hedlund.jiss.version}</version>
     </dependency>
     
     <dependency>
@@ -100,15 +109,12 @@
 		<plugin>
 		  <groupId>org.apache.maven.plugins</groupId>
 		  <artifactId>maven-compiler-plugin</artifactId>
-		  <version>3.7.0</version>
-		  <configuration>
-		    <source>9</source>
-		    <target>9</target>
-		    <compilerArgs>
-				<arg>--add-modules</arg>
-				<arg>java.xml.bind</arg>
-			</compilerArgs>
-		  </configuration>
+		  <version>3.8.0</version>
+			<configuration>
+			  <source>${project.build.sourceVersion}</source>
+			  <target>${project.build.targetVersion}</target>
+			  <release>${project.build.targetVersion}</release>
+			</configuration>
 		</plugin>
 		
     </plugins>
