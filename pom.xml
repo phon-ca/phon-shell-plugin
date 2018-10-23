@@ -66,6 +66,9 @@
 	
 	<ca.phon.version>3.0.2-SNAPSHOT</ca.phon.version>
 	<ca.hedlund.jiss.version>1.0</ca.hedlund.jiss.version>
+	
+	
+	<org.apache.maven.plugins.maven-compiler-plugin.version>3.8.0</org.apache.maven.plugins.maven-compiler-plugin.version>
   </properties>
   
   <dependencies>
@@ -109,7 +112,7 @@
 		<plugin>
 		  <groupId>org.apache.maven.plugins</groupId>
 		  <artifactId>maven-compiler-plugin</artifactId>
-		  <version>3.8.0</version>
+		  <version>${org.apache.maven.plugins.maven-compiler-plugin.version}</version>
 			<configuration>
 			  <source>${project.build.sourceVersion}</source>
 			  <target>${project.build.targetVersion}</target>
