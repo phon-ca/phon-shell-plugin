@@ -113,7 +113,8 @@
 		  <groupId>org.apache.maven.plugins</groupId>
 		  <artifactId>maven-compiler-plugin</artifactId>
 		  <version>${org.apache.maven.plugins.maven-compiler-plugin.version}</version>
-			<configuration>
+		  <configuration>
+			  <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
 			  <source>${project.build.sourceVersion}</source>
 			  <target>${project.build.targetVersion}</target>
 			  <release>${project.build.targetVersion}</release>
