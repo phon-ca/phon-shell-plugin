@@ -54,7 +54,7 @@ public class BufferRedirectPreprocessor implements JissPreprocessor {
 				
 				@Override
 				public void run() {
-					final BufferWindow window = BufferWindow.getInstance();
+					final BufferWindow window = BufferWindow.getBufferWindow();
 					BufferPanel panel = window.getBuffer(name);
 					
 					if(type.equals(">")) {
