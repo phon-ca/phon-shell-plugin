@@ -64,7 +64,7 @@
 	<project.build.sourceVersion>11</project.build.sourceVersion>
 	<project.build.targetVersion>11</project.build.targetVersion>
 	
-	<ca.phon.version>3.0.2-SNAPSHOT</ca.phon.version>
+	<ca.phon.version>3.0.2</ca.phon.version>
 	<ca.hedlund.jiss.version>1.0</ca.hedlund.jiss.version>
 	
 	
