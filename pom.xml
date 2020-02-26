@@ -17,12 +17,12 @@
     <repository>
       <id>phon.ca-release</id>
       <name>Phon Release</name>
-      <url>https://www.phon.ca/artifacts/libs-release-local</url>
+      <url>http://phon.ucs.mun.ca/artifacts/libs-release-local</url>
     </repository>
     <snapshotRepository>
       <id>phon.ca-snapshot</id>
       <name>Phon Snapshot</name>
-      <url>https://www.phon.ca/artifacts/libs-snapshot-local</url>
+      <url>http://phon.ucs.mun.ca/artifacts/libs-snapshot-local</url>
     </snapshotRepository>
   </distributionManagement>
   
@@ -33,13 +33,13 @@
       </snapshots>
       <id>central</id>
       <name>libs-release</name>
-      <url>https://www.phon.ca/artifacts/libs-release</url>
+      <url>http://phon.ucs.mun.ca/artifacts/libs-release</url>
     </repository>
     <repository>
       <snapshots/>
       <id>snapshots</id>
       <name>libs-snapshot</name>
-      <url>https://www.phon.ca/artifacts/libs-snapshot</url>
+      <url>http://phon.ucs.mun.ca/artifacts/libs-snapshot</url>
     </repository>
   </repositories>
   <pluginRepositories>
@@ -49,13 +49,13 @@
       </snapshots>
       <id>central</id>
       <name>plugins-release</name>
-      <url>https://www.phon.ca/artifacts/plugins-release</url>
+      <url>http://phon.ucs.mun.ca/artifacts/plugins-release</url>
     </pluginRepository>
     <pluginRepository>
       <snapshots/>
       <id>snapshots</id>
       <name>plugins-snapshot</name>
-      <url>https://www.phon.ca/artifacts/plugins-snapshot</url>
+      <url>http://phon.ucs.mun.ca/artifacts/plugins-snapshot</url>
     </pluginRepository>
   </pluginRepositories>
   
@@ -64,7 +64,7 @@
 	<project.build.sourceVersion>11</project.build.sourceVersion>
 	<project.build.targetVersion>11</project.build.targetVersion>
 	
-	<ca.phon.version>3.0.4-SNAPSHOT</ca.phon.version>
+	<ca.phon.version>3.1.0-SNAPSHOT</ca.phon.version>
 	<ca.hedlund.jiss.version>1.0</ca.hedlund.jiss.version>
 	
 	
@@ -123,5 +123,5 @@
 		
     </plugins>
   </build>
-  <version>15</version>
+  <version>16</version>
 </project>
