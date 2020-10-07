@@ -61,11 +61,11 @@
   
   <properties>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	<project.build.sourceVersion>11</project.build.sourceVersion>
-	<project.build.targetVersion>11</project.build.targetVersion>
+	<project.build.sourceVersion>15</project.build.sourceVersion>
+	<project.build.targetVersion>15</project.build.targetVersion>
 	
-	<ca.phon.version>3.1.0-SNAPSHOT</ca.phon.version>
-	<ca.hedlund.jiss.version>1.0</ca.hedlund.jiss.version>
+	<ca.phon.version>3.1.4-SNAPSHOT</ca.phon.version>
+	<ca.hedlund.jiss.version>1.1</ca.hedlund.jiss.version>
 	
 	
 	<org.apache.maven.plugins.maven-compiler-plugin.version>3.8.0</org.apache.maven.plugins.maven-compiler-plugin.version>
@@ -114,7 +114,6 @@
 		  <artifactId>maven-compiler-plugin</artifactId>
 		  <version>${org.apache.maven.plugins.maven-compiler-plugin.version}</version>
 		  <configuration>
-			  <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
 			  <source>${project.build.sourceVersion}</source>
 			  <target>${project.build.targetVersion}</target>
 			  <release>${project.build.targetVersion}</release>
