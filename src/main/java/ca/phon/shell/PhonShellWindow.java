@@ -20,6 +20,8 @@ import java.awt.Color;
 import java.awt.Font;
 
 import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -31,9 +33,12 @@ import ca.phon.project.Project;
 import ca.phon.session.Session;
 import ca.phon.shell.actions.ExecAction;
 import ca.phon.ui.CommonModuleFrame;
+import ca.phon.util.PrefHelper;
 
 
 public class PhonShellWindow extends CommonModuleFrame {
+	
+	public final static String SCRIPT_ENGINE_PROP = PhonShellWindow.class.getName() + ".scriptEngine";
 	
 	/**
 	 * shell model
@@ -70,6 +75,18 @@ public class PhonShellWindow extends CommonModuleFrame {
 		putExtension(Session.class, cmf.getExtension(Session.class));
 		
 		model = new JissModel(PhonShellWindow.class.getClassLoader());
+		
+		String scriptEngineName = PrefHelper.get(SCRIPT_ENGINE_PROP, null);
+		if(scriptEngineName != null) {
+			ScriptEngineManager manager = new ScriptEngineManager();
+			ScriptEngine engine = manager.getEngineByName(scriptEngineName);
+			model.setScriptEngine(engine);
+		}
+		model.addPropertyChangeListener(JissModel.SCRIPT_ENGINE_PROP, (e) -> {
+			PrefHelper.getUserPreferences().put(SCRIPT_ENGINE_PROP, 
+					(model.getScriptEngine() != null ? model.getScriptEngine().getFactory().getEngineName() : null));
+		});
+		
 		if(cmf != null) {
 			model.getScriptContext().getBindings(ScriptContext.ENGINE_SCOPE).put("window", cmf);
 			setParentFrame(cmf);
