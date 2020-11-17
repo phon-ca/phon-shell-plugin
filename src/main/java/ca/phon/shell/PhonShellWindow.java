@@ -80,11 +80,12 @@ public class PhonShellWindow extends CommonModuleFrame {
 		if(scriptEngineName != null) {
 			ScriptEngineManager manager = new ScriptEngineManager();
 			ScriptEngine engine = manager.getEngineByName(scriptEngineName);
-			model.setScriptEngine(engine);
+			if(engine != null)
+				model.setScriptEngine(engine);
 		}
 		model.addPropertyChangeListener(JissModel.SCRIPT_ENGINE_PROP, (e) -> {
 			PrefHelper.getUserPreferences().put(SCRIPT_ENGINE_PROP, 
-					(model.getScriptEngine() != null ? model.getScriptEngine().getFactory().getEngineName() : null));
+					(model.getScriptEngine() != null ? model.getScriptEngine().getFactory().getNames().get(0) : null));
 		});
 		
 		if(cmf != null) {
