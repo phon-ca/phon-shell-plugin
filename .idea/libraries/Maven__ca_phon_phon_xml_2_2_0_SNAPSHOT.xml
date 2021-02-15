@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: ca.phon:phon-xml:2.2.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/ca/phon/phon-xml/2.2.0-SNAPSHOT/phon-xml-2.2.0-20180411.200405-149.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/ca/phon/phon-xml/2.2.0-SNAPSHOT/phon-xml-2.2.0-20180411.200405-149-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/ca/phon/phon-xml/2.2.0-SNAPSHOT/phon-xml-2.2.0-20180411.200405-149-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

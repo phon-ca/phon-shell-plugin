@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: ca.gedge.opgraph:opgraph-xml-io:0.5-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/ca/gedge/opgraph/opgraph-xml-io/0.5-SNAPSHOT/opgraph-xml-io-0.5-20180212.193505-31.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/ca/gedge/opgraph/opgraph-xml-io/0.5-SNAPSHOT/opgraph-xml-io-0.5-20180212.193505-31-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/ca/gedge/opgraph/opgraph-xml-io/0.5-SNAPSHOT/opgraph-xml-io-0.5-20180212.193505-31-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: ca.phon:phon-ipamap:2.2.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/ca/phon/phon-ipamap/2.2.0-SNAPSHOT/phon-ipamap-2.2.0-20180411.200603-137.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/ca/phon/phon-ipamap/2.2.0-SNAPSHOT/phon-ipamap-2.2.0-20180411.200603-137-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/ca/phon/phon-ipamap/2.2.0-SNAPSHOT/phon-ipamap-2.2.0-20180411.200603-137-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

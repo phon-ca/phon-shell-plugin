@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: ca.phon:jbreadcrumb:1-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/ca/phon/jbreadcrumb/1-SNAPSHOT/jbreadcrumb-1-20170216.143444-3.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/ca/phon/jbreadcrumb/1-SNAPSHOT/jbreadcrumb-1-20170216.143444-3-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/ca/phon/jbreadcrumb/1-SNAPSHOT/jbreadcrumb-1-20170216.143444-3-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

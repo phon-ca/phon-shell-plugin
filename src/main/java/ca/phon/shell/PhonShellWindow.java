@@ -33,6 +33,7 @@ import ca.phon.project.Project;
 import ca.phon.session.Session;
 import ca.phon.shell.actions.ExecAction;
 import ca.phon.ui.CommonModuleFrame;
+import ca.phon.ui.fonts.FontPreferences;
 import ca.phon.util.PrefHelper;
 
 
@@ -99,7 +100,7 @@ public class PhonShellWindow extends CommonModuleFrame {
 		
 		console = new JissConsole(model);
 		
-		final Font consoleFont = new Font("Liberation Mono", Font.PLAIN, 13);
+		final Font consoleFont = FontPreferences.getMonospaceFont();
 		console.setFont(consoleFont);
 		
 		console.setForeground(Color.white);
