@@ -4,3 +4,5 @@
 target/
 .README.md.html
 
+.idea/
+*.iml
