@@ -3,10 +3,7 @@ package ca.phon.shell;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
@@ -39,7 +36,7 @@ public class ScriptOpenFileHandler implements OpenFileHandler, IPluginExtensionP
 	}
 
 	@Override
-	public void openFile(File file) throws IOException {
+	public void openFile(File file, Map<String, Object> map) throws IOException {
 		PhonShellScriptAction act = new PhonShellScriptAction(file.getAbsolutePath());
 		SwingUtilities.invokeLater(() -> {
 			act.actionPerformed(new ActionEvent(CommonModuleFrame.getCurrentFrame(), 1, "open"));

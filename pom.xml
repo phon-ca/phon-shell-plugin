@@ -18,7 +18,7 @@
 	<project.build.sourceVersion>17</project.build.sourceVersion>
 	<project.build.targetVersion>17</project.build.targetVersion>
 	
-	<ca.phon.version>3.5.0-SNAPSHOT</ca.phon.version>
+	<ca.phon.version>4.0.0-SNAPSHOT</ca.phon.version>
 	<ca.hedlund.jiss.version>1.3.0</ca.hedlund.jiss.version>
 	
 	
@@ -76,5 +76,5 @@
 		
     </plugins>
   </build>
-  <version>24</version>
+  <version>25</version>
 </project>
