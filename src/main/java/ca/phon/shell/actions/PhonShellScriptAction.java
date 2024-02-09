@@ -58,7 +58,7 @@ public class PhonShellScriptAction extends HookableAction {
 			window.setVisible(true);
 		}
 		
-		(new RunCommand(window.getConsole(), createExecCommand())).runCommand();
+		(new RunCommand(window.getPhonShell().getConsole(), createExecCommand())).runCommand();
 	}
 
 	public String createExecCommand() {

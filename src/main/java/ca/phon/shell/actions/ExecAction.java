@@ -26,7 +26,7 @@ import javax.swing.SwingUtilities;
 
 import ca.hedlund.jiss.ui.JissConsole;
 import ca.hedlund.jiss.ui.bindings.RunCommand;
-import ca.phon.shell.PhonShellWindow;
+import ca.phon.shell.PhonShell;
 import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.nativedialogs.FileFilter;
 import ca.phon.ui.nativedialogs.NativeDialogEvent;
@@ -42,7 +42,7 @@ public class ExecAction extends PhonShellAction {
 	
 	private final static String DESC = "Browse for and execute script on disk";
 	
-	public ExecAction(PhonShellWindow phonShell) {
+	public ExecAction(PhonShell phonShell) {
 		super(phonShell);
 		
 		putValue(NAME, TXT);
@@ -78,8 +78,8 @@ public class ExecAction extends PhonShellAction {
 			
 			@Override
 			public void nativeDialogEvent(NativeDialogEvent arg0) {
-				final PhonShellWindow window = getPhonShellWindow();
-				final JissConsole console = window.getConsole();
+				final PhonShell phonShell = getPhonShell();
+				final JissConsole console = phonShell.getConsole();
 				
 				final File scriptFile = new File(arg0.getDialogData().toString());
 				

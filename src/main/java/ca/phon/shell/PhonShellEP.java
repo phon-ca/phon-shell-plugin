@@ -53,7 +53,7 @@ public class PhonShellEP implements IPluginEntryPoint {
 				
 				if(arg0.get(SCRIPT_PROP) != null) {
 					final String cmd = "::exec \"" + arg0.get(SCRIPT_PROP) + "\"";
-					(new RunCommand(phonShell.getConsole(), cmd)).runCommand();
+					(new RunCommand(phonShell.getPhonShell().getConsole(), cmd)).runCommand();
 				}
 			}
 		};

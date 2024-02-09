@@ -18,20 +18,20 @@ package ca.phon.shell.actions;
 import java.lang.ref.WeakReference;
 
 import ca.phon.app.hooks.HookableAction;
-import ca.phon.shell.PhonShellWindow;
+import ca.phon.shell.PhonShell;
 
 public abstract class PhonShellAction extends HookableAction {
 
 	private static final long serialVersionUID = 4985986930914930136L;
 
-	private final WeakReference<PhonShellWindow> phonShellRef;
+	private final WeakReference<PhonShell> phonShellRef;
 	
-	public PhonShellAction(PhonShellWindow phonShell) {
+	public PhonShellAction(PhonShell phonShell) {
 		super();
-		this.phonShellRef = new WeakReference<PhonShellWindow>(phonShell);
+		this.phonShellRef = new WeakReference<PhonShell>(phonShell);
 	}
 	
-	public PhonShellWindow getPhonShellWindow() {
+	public PhonShell getPhonShell() {
 		return phonShellRef.get();
 	}
 	

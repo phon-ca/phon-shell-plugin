@@ -36,15 +36,15 @@ public class ScriptTransferHandler extends FileTransferHandler {
 
 	private static final long serialVersionUID = 1L;
 	
-	private PhonShellWindow window;
+	private PhonShell phonShell;
 	
-	public ScriptTransferHandler(PhonShellWindow window) {
+	public ScriptTransferHandler(PhonShell phonShell) {
 		super();
-		this.window = window;
+		this.phonShell = phonShell;
 	}
 	
-	public PhonShellWindow getWindow() {
-		return this.window;
+	public PhonShell getPhonShell() {
+		return this.phonShell;
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class ScriptTransferHandler extends FileTransferHandler {
 					if(engine != null) {
 						final String cmd = "::exec \"" + file.getAbsolutePath() + "\"";
 						SwingUtilities.invokeLater( () -> {
-							(new RunCommand(getWindow().getConsole(), cmd)).runCommand();
+							(new RunCommand(getPhonShell().getConsole(), cmd)).runCommand();
 						});
 						return true;
 					}
@@ -81,7 +81,7 @@ public class ScriptTransferHandler extends FileTransferHandler {
 		} catch (IOException e) {
 			try {
 				final String txt = t.getTransferData(DataFlavor.stringFlavor).toString();
-				getWindow().getConsole().replaceSelection(txt);
+				getPhonShell().getConsole().replaceSelection(txt);
 			} catch (UnsupportedFlavorException | IOException e1) {
 				e.printStackTrace();
 			}
