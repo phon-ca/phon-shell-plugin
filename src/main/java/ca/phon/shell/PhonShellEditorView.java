@@ -5,6 +5,7 @@ import ca.phon.app.session.editor.SessionEditor;
 import ca.phon.util.icons.IconManager;
 import ca.phon.util.icons.IconSize;
 
+import javax.script.ScriptContext;
 import javax.swing.*;
 import java.awt.*;
 
@@ -28,6 +29,13 @@ public class PhonShellEditorView extends EditorView {
 
         final JScrollPane sp = new JScrollPane(phonShell);
         add(sp, BorderLayout.CENTER);
+
+        phonShell.getModel().getScriptContext()
+                .getBindings(ScriptContext.ENGINE_SCOPE).put("editor", getEditor());
+        phonShell.getModel().getScriptContext()
+                .getBindings(ScriptContext.ENGINE_SCOPE).put("project", getEditor().getProject());
+        phonShell.getModel().getScriptContext()
+                .getBindings(ScriptContext.ENGINE_SCOPE).put("session", getEditor().getSession());
     }
 
     @Override
