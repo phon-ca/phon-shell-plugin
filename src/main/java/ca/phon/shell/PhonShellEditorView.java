@@ -2,6 +2,7 @@ package ca.phon.shell;
 
 import ca.phon.app.session.editor.EditorView;
 import ca.phon.app.session.editor.SessionEditor;
+import ca.phon.ui.CommonModuleFrame;
 import ca.phon.util.icons.IconManager;
 import ca.phon.util.icons.IconSize;
 
@@ -30,12 +31,16 @@ public class PhonShellEditorView extends EditorView {
         final JScrollPane sp = new JScrollPane(phonShell);
         add(sp, BorderLayout.CENTER);
 
-        phonShell.getModel().getScriptContext()
-                .getBindings(ScriptContext.ENGINE_SCOPE).put("editor", getEditor());
-        phonShell.getModel().getScriptContext()
-                .getBindings(ScriptContext.ENGINE_SCOPE).put("project", getEditor().getProject());
-        phonShell.getModel().getScriptContext()
-                .getBindings(ScriptContext.ENGINE_SCOPE).put("session", getEditor().getSession());
+        SwingUtilities.invokeLater( () -> {
+            phonShell.getModel().getScriptContext()
+                    .getBindings(ScriptContext.ENGINE_SCOPE).put("editor", getEditor());
+            phonShell.getModel().getScriptContext()
+                    .getBindings(ScriptContext.ENGINE_SCOPE).put("project", getEditor().getProject());
+            phonShell.getModel().getScriptContext()
+                    .getBindings(ScriptContext.ENGINE_SCOPE).put("session", getEditor().getSession());
+            phonShell.getModel().getScriptContext()
+                    .getBindings(ScriptContext.ENGINE_SCOPE).put("window", CommonModuleFrame.getCurrentFrame());
+        });
     }
 
     @Override
