@@ -25,6 +25,7 @@ import javax.swing.event.*;
 
 import ca.phon.plugin.*;
 import ca.phon.project.Project;
+import ca.phon.project.ProjectPaths;
 import ca.phon.shell.actions.PhonShellScriptAction;
 import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.action.PhonUIAction;
@@ -113,14 +114,17 @@ public class PhonShellMenuExtPt implements IPluginExtensionPoint<IPluginMenuFilt
 			CommonModuleFrame cmf = (CommonModuleFrame)window;
 			if(cmf.getExtension(Project.class) != null) {
 				Project project = cmf.getExtension(Project.class);
-				
-				final String projectScriptPath = 
-						project.getLocation() + File.separator + PROJECT_SCRIPT_FOLDER;
-				headerItem = new JMenuItem("Project scripts");
-				headerItem.setToolTipText("Scripts in folder: " + projectScriptPath);
-				headerItem.setEnabled(false);
-				scriptsMenu.add(headerItem);
-				setupScriptsMenuRecursive(scriptsMenu, new File(projectScriptPath), exts);
+
+				final ProjectPaths projectPaths = project.getExtension(ProjectPaths.class);
+				if(projectPaths != null) {
+					final String projectScriptPath =
+							projectPaths.getLocation() + File.separator + PROJECT_SCRIPT_FOLDER;
+					headerItem = new JMenuItem("Project scripts");
+					headerItem.setToolTipText("Scripts in folder: " + projectScriptPath);
+					headerItem.setEnabled(false);
+					scriptsMenu.add(headerItem);
+					setupScriptsMenuRecursive(scriptsMenu, new File(projectScriptPath), exts);
+				}
 			}
 		}
 	}
