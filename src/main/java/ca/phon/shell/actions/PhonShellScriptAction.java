@@ -16,9 +16,12 @@
 package ca.phon.shell.actions;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 
 import ca.hedlund.jiss.ui.bindings.RunCommand;
 import ca.phon.app.hooks.HookableAction;
+import ca.phon.shell.PhonShell;
+import ca.phon.shell.PhonShellRecentFiles;
 import ca.phon.shell.PhonShellWindow;
 import ca.phon.ui.CommonModuleFrame;
 
@@ -32,10 +35,18 @@ public class PhonShellScriptAction extends HookableAction {
 	private final String scriptLocation;
 	
 	private boolean useBuffer = false;
+
+    private PhonShell phonShellContext;
 	
 	public PhonShellScriptAction(String scriptLocation) {
 		this.scriptLocation = scriptLocation;
 	}
+
+    public PhonShellScriptAction(PhonShell phonShellContext, String scriptLocation, boolean useBuffer) {
+        this.phonShellContext = phonShellContext;
+        this.scriptLocation = scriptLocation;
+        this.useBuffer = useBuffer;
+    }
 	
 	public boolean isUseBuffer() {
 		return this.useBuffer;
@@ -47,18 +58,24 @@ public class PhonShellScriptAction extends HookableAction {
 	
 	@Override
 	public void hookableActionPerformed(ActionEvent ae) {
-		PhonShellWindow window = null;
+        PhonShell shell = phonShellContext;
+        if(shell == null) {
+            PhonShellWindow window = null;
+
+            CommonModuleFrame cmf = CommonModuleFrame.getCurrentFrame();
+            if (cmf instanceof PhonShellWindow) {
+                window = (PhonShellWindow) cmf;
+            } else {
+                window = new PhonShellWindow();
+                window.pack();
+                window.setVisible(true);
+            }
+            shell = window.getPhonShell();
+        }
+
+        PhonShellRecentFiles.getInstance().addToHistory(new File(scriptLocation));
 		
-		CommonModuleFrame cmf = CommonModuleFrame.getCurrentFrame();
-		if(cmf instanceof PhonShellWindow) {
-			window = (PhonShellWindow)cmf;
-		} else {
-			window = new PhonShellWindow();
-			window.pack();
-			window.setVisible(true);
-		}
-		
-		(new RunCommand(window.getPhonShell().getConsole(), createExecCommand())).runCommand();
+		(new RunCommand(shell.getConsole(), createExecCommand())).runCommand();
 	}
 
 	public String createExecCommand() {

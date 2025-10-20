@@ -27,6 +27,7 @@ import javax.swing.SwingUtilities;
 import ca.hedlund.jiss.ui.JissConsole;
 import ca.hedlund.jiss.ui.bindings.RunCommand;
 import ca.phon.shell.PhonShell;
+import ca.phon.shell.PhonShellRecentFiles;
 import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.nativedialogs.FileFilter;
 import ca.phon.ui.nativedialogs.NativeDialogEvent;
@@ -82,6 +83,7 @@ public class ExecAction extends PhonShellAction {
 				final JissConsole console = phonShell.getConsole();
 				
 				final File scriptFile = new File(arg0.getDialogData().toString());
+                PhonShellRecentFiles.getInstance().addToHistory(scriptFile);
 				
                 final String cmd = "::exec \"" + scriptFile.getAbsolutePath() + "\" > " + scriptFile.getName();
 				SwingUtilities.invokeLater( () -> {

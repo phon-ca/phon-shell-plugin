@@ -39,11 +39,11 @@ import ca.phon.util.PrefHelper;
 public class PhonShellMenuExtPt implements IPluginExtensionPoint<IPluginMenuFilter>, IPluginExtensionFactory<IPluginMenuFilter>, IPluginMenuFilter {
 
 	// location of PhonShell script for user
-	final private static String USER_SCRIPT_FOLDER = 
+	final public static String USER_SCRIPT_FOLDER =
 			PrefHelper.getUserDataFolder() + File.separator + "PhonShell";
 	
 	// location of PhonShell scripts in project
-	final private static String PROJECT_SCRIPT_FOLDER =
+	final public static String PROJECT_SCRIPT_FOLDER =
 			"__res" + File.separator + "PhonShell";
 	
 	@Override
