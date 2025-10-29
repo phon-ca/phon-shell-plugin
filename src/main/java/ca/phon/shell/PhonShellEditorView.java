@@ -11,6 +11,9 @@ import ca.phon.ui.FlatButton;
 import ca.phon.ui.IconStrip;
 import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.menu.MenuBuilder;
+import ca.phon.ui.nativedialogs.NativeDialogEvent;
+import ca.phon.ui.nativedialogs.OpenDialogProperties;
+import ca.phon.util.PrefHelper;
 import ca.phon.util.RecentFiles;
 import ca.phon.util.icons.IconManager;
 import ca.phon.util.icons.IconSize;
@@ -30,6 +33,8 @@ public class PhonShellEditorView extends EditorView {
     public final static String VIEW_NAME = "PhonShell";
 
     public final static String VIEW_ICON = IconManager.GoogleMaterialDesignIconsFontName + ":terminal";
+
+    public final static String CUSTOM_FOLDER_PREF = "phonshell.customScriptFolders";
 
     private PhonShell phonShell;
 
@@ -82,6 +87,10 @@ public class PhonShellEditorView extends EditorView {
     }
 
     private void setupToolbar() {
+        final ImageIcon scriptIcon = IconManager.getInstance().getFontIcon(
+                IconManager.GoogleMaterialDesignIconsFontName, "code_blocks", IconSize.MEDIUM, Color.darkGray);
+        iconStrip.add(new JLabel(scriptIcon), IconStrip.IconStripPosition.LEFT);
+
         final PhonUIAction<Void> selectScriptAction = PhonUIAction.runnable(this::showScriptMenu);
         if(recentFiles.getFileCount() > 0) {
             final File mostRecentScript = recentFiles.getFileAt(0);
@@ -91,9 +100,10 @@ public class PhonShellEditorView extends EditorView {
         }
         selectScriptAction.putValue(PhonUIAction.SHORT_DESCRIPTION, "Select a script to run");
         selectScriptAction.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
-        selectScriptAction.putValue(FlatButton.ICON_NAME_PROP, "code");
+        selectScriptAction.putValue(FlatButton.ICON_NAME_PROP, "arrow_drop_down");
         selectScriptAction.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
         selectScriptButton = new FlatButton(selectScriptAction);
+        selectScriptButton.setHorizontalTextPosition(SwingConstants.LEFT);
         iconStrip.add(selectScriptButton, IconStrip.IconStripPosition.LEFT);
 
         final PhonUIAction<Void> runScriptAction = PhonUIAction.runnable(this::runSelectedScript);
@@ -166,10 +176,81 @@ public class PhonShellEditorView extends EditorView {
             }
         }
 
+        // custom script folders
+        final String customFoldersStr = PrefHelper.get(CUSTOM_FOLDER_PREF, "");
+        if(!customFoldersStr.isEmpty()) {
+            final String[] customFolders = customFoldersStr.split(";");
+            for(String folderPath:customFolders) {
+                final File folder = new File(folderPath);
+                if (folder.exists() && folder.isDirectory()) {
+                    final JMenu customScriptsMenu = menuBuilder.addMenu(".", "Scripts: " + folder.getName());
+                    final MenuBuilder mb = new MenuBuilder(customScriptsMenu);
+                    setupScriptsMenuRecursive(mb, folder, exts);
+                    
+                    if(customScriptsMenu.getItemCount() > 0) {
+                        mb.addSeparator(".", "customScriptsSep");
+                        final PhonUIAction<String> removeCustomFolderAct = PhonUIAction.consumer(this::removeCustomFolderAct, folderPath);
+                        removeCustomFolderAct.putValue(PhonUIAction.NAME, "Remove this folder from custom script folders");
+                        mb.addItem(".", removeCustomFolderAct);
+                    }
+                }
+            }
+        }
         menuBuilder.addSeparator(".", "userScriptsSep");
 
+        final PhonUIAction<Void> addCustomFolderAct = PhonUIAction.runnable(this::addCustomScriptFolderAct);
+        addCustomFolderAct.putValue(PhonUIAction.NAME, "Add custom script folder...");
+        menuBuilder.addItem(".", addCustomFolderAct);
+
         final ExecAction execAction = new ExecAction(phonShell);
+        execAction.putValue(PhonUIAction.NAME, "Browse for script...");
         menuBuilder.addItem(".", execAction);
+    }
+
+    private void removeCustomFolderAct(String folderPath) {
+        List<String> updatedFolders = new ArrayList<>();
+
+        final String customFoldersStr = PrefHelper.get(CUSTOM_FOLDER_PREF, "");
+        if(!customFoldersStr.isEmpty()) {
+            final String[] customFolders = customFoldersStr.split(";");
+            for(String path:customFolders) {
+                if(!path.equals(folderPath)) {
+                    updatedFolders.add(path);
+                }
+            }
+            final String newPrefStr = String.join(";", updatedFolders);
+            PrefHelper.getUserPreferences().put(CUSTOM_FOLDER_PREF, newPrefStr);
+        }
+    }
+
+    private void addCustomScriptFolderAct() {
+        final OpenDialogProperties props = new OpenDialogProperties();
+        props.setCanChooseFiles(false);
+        props.setCanChooseDirectories(true);
+        props.setAllowMultipleSelection(false);
+        props.setRunAsync(true);
+        props.setParentWindow(CommonModuleFrame.getCurrentFrame());
+        props.setListener( (evt) -> {
+            if(evt.getDialogResult() == NativeDialogEvent.OK_OPTION && evt.getDialogData() != null) {
+                final String folderPath = evt.getDialogData().toString();
+                List<String> updatedFolders = new ArrayList<>();
+                final String customFoldersStr = PrefHelper.get(CUSTOM_FOLDER_PREF, "");
+
+                if(customFoldersStr.isEmpty()) {
+                    updatedFolders.add(folderPath);
+                } else {
+                    final String[] customFolders = customFoldersStr.split(";");
+                    for(String path:customFolders) {
+                        updatedFolders.add(path);
+                    }
+                    if(!updatedFolders.contains(folderPath)) {
+                        updatedFolders.add(folderPath);
+                    }
+                }
+                final String newPrefStr = String.join(";", updatedFolders);
+                PrefHelper.getUserPreferences().put(CUSTOM_FOLDER_PREF, newPrefStr);
+            }
+        });
     }
 
     private void setupScriptsMenuRecursive(MenuBuilder menuBuilder, File folder, List<String> exts) {
