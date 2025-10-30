@@ -12,6 +12,7 @@ import ca.phon.ui.IconStrip;
 import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.menu.MenuBuilder;
 import ca.phon.ui.nativedialogs.NativeDialogEvent;
+import ca.phon.ui.nativedialogs.NativeDialogs;
 import ca.phon.ui.nativedialogs.OpenDialogProperties;
 import ca.phon.util.PrefHelper;
 import ca.phon.util.RecentFiles;
@@ -251,6 +252,7 @@ public class PhonShellEditorView extends EditorView {
                 PrefHelper.getUserPreferences().put(CUSTOM_FOLDER_PREF, newPrefStr);
             }
         });
+        NativeDialogs.showOpenDialog(props);
     }
 
     private void setupScriptsMenuRecursive(MenuBuilder menuBuilder, File folder, List<String> exts) {
