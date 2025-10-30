@@ -6,6 +6,7 @@ import ca.phon.project.Project;
 import ca.phon.project.ProjectPaths;
 import ca.phon.shell.actions.ExecAction;
 import ca.phon.shell.actions.PhonShellScriptAction;
+import ca.phon.shell.components.VariablesTreeTable;
 import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.FlatButton;
 import ca.phon.ui.IconStrip;
@@ -20,6 +21,7 @@ import ca.phon.util.icons.IconManager;
 import ca.phon.util.icons.IconSize;
 import org.apache.commons.io.FilenameUtils;
 
+import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
@@ -43,6 +45,11 @@ public class PhonShellEditorView extends EditorView {
     private FlatButton selectScriptButton;
     private File selectedScriptFile;
     private FlatButton runScriptButton;
+    private FlatButton variablesButton;
+
+    private VariablesTreeTable variablesTreeTable;
+    private JPanel eastPanel;
+    private boolean variablesVisible = false;
 
     private PhonShellRecentFiles recentFiles;
 
@@ -74,6 +81,11 @@ public class PhonShellEditorView extends EditorView {
 
         final JScrollPane sp = new JScrollPane(phonShell);
         add(sp, BorderLayout.CENTER);
+
+        // Setup east panel for variables tree table
+        eastPanel = new JPanel(new BorderLayout());
+        eastPanel.setVisible(false);
+        eastPanel.setPreferredSize(new Dimension(350, 400));
 
         SwingUtilities.invokeLater( () -> {
             phonShell.getModel().getScriptContext()
@@ -115,6 +127,38 @@ public class PhonShellEditorView extends EditorView {
         runScriptButton = new FlatButton(runScriptAction);
         runScriptAction.setEnabled(selectedScriptFile != null);
         iconStrip.add(runScriptButton, IconStrip.IconStripPosition.LEFT);
+
+        // Variables button (right side)
+        final PhonUIAction<Void> variablesAction = PhonUIAction.runnable(this::toggleVariablesTreeTable);
+        variablesAction.putValue(PhonUIAction.SHORT_DESCRIPTION, "Show/hide context variables");
+        variablesAction.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
+        variablesAction.putValue(FlatButton.ICON_NAME_PROP, "account_tree");
+        variablesAction.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
+        variablesButton = new FlatButton(variablesAction);
+        iconStrip.add(variablesButton, IconStrip.IconStripPosition.RIGHT);
+    }
+
+    private void toggleVariablesTreeTable() {
+        variablesVisible = !variablesVisible;
+        if (variablesVisible) {
+            // Get context variables from JissModel
+            Bindings bindings = phonShell.getModel().getScriptContext().getBindings(ScriptContext.ENGINE_SCOPE);
+            
+            if (variablesTreeTable == null) {
+                variablesTreeTable = new VariablesTreeTable(bindings);
+                eastPanel.add(variablesTreeTable, BorderLayout.CENTER);
+            } else {
+                variablesTreeTable.refresh(bindings);
+            }
+            
+            add(eastPanel, BorderLayout.EAST);
+            eastPanel.setVisible(true);
+        } else {
+            remove(eastPanel);
+            eastPanel.setVisible(false);
+        }
+        revalidate();
+        repaint();
     }
 
     private void setSelectedScriptFile(File selectedScriptFile) {
