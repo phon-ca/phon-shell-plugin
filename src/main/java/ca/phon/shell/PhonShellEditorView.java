@@ -20,6 +20,8 @@ import ca.phon.util.RecentFiles;
 import ca.phon.util.icons.IconManager;
 import ca.phon.util.icons.IconSize;
 import org.apache.commons.io.FilenameUtils;
+import org.jdesktop.swingx.JXBusyLabel;
+import ca.hedlund.jiss.JissModel;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -27,6 +29,8 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,9 +50,10 @@ public class PhonShellEditorView extends EditorView {
     private File selectedScriptFile;
     private FlatButton runScriptButton;
     private FlatButton variablesButton;
+    private JXBusyLabel busyLabel;
 
     private VariablesTreeTable variablesTreeTable;
-    private JPanel eastPanel;
+    private JSplitPane splitPane;
     private boolean variablesVisible = false;
 
     private PhonShellRecentFiles recentFiles;
@@ -79,13 +84,39 @@ public class PhonShellEditorView extends EditorView {
         add(iconStrip, BorderLayout.NORTH);
         setupToolbar();
 
-        final JScrollPane sp = new JScrollPane(phonShell);
-        add(sp, BorderLayout.CENTER);
+        // Setup split pane with phonShell console and variables view
+        final JScrollPane consoleScrollPane = new JScrollPane(phonShell);
+        
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        splitPane.setLeftComponent(consoleScrollPane);
+        splitPane.setRightComponent(null); // Variables view initially hidden
+        splitPane.setResizeWeight(0.67); // 2/3 for editor, 1/3 for variables
+        splitPane.setOneTouchExpandable(true);
+        
+        add(splitPane, BorderLayout.CENTER);
 
-        // Setup east panel for variables tree table
-        eastPanel = new JPanel(new BorderLayout());
-        eastPanel.setVisible(false);
-        eastPanel.setPreferredSize(new Dimension(350, 400));
+        // Add property change listener to detect when scripts/commands finish executing
+        phonShell.getModel().addPropertyChangeListener(JissModel.SCRIPT_RUNNING_PROP, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                boolean isRunning = (Boolean) evt.getNewValue();
+                if (isRunning) {
+                    // Script started - show busy indicator
+                    if (busyLabel != null) {
+                        busyLabel.setBusy(true);
+                    }
+                } else {
+                    // Script finished - hide busy indicator and refresh variables
+                    if (busyLabel != null) {
+                        busyLabel.setBusy(false);
+                    }
+                    if (variablesVisible && variablesTreeTable != null) {
+                        Bindings bindings = phonShell.getModel().getScriptContext().getBindings(ScriptContext.ENGINE_SCOPE);
+                        variablesTreeTable.refresh(bindings);
+                    }
+                }
+            }
+        });
 
         SwingUtilities.invokeLater( () -> {
             phonShell.getModel().getScriptContext()
@@ -128,6 +159,11 @@ public class PhonShellEditorView extends EditorView {
         runScriptAction.setEnabled(selectedScriptFile != null);
         iconStrip.add(runScriptButton, IconStrip.IconStripPosition.LEFT);
 
+        // Add busy label to show script execution progress
+        busyLabel = new JXBusyLabel();
+        busyLabel.setBusy(false);
+        iconStrip.add(busyLabel, IconStrip.IconStripPosition.LEFT);
+
         // Variables button (right side)
         final PhonUIAction<Void> variablesAction = PhonUIAction.runnable(this::toggleVariablesTreeTable);
         variablesAction.putValue(PhonUIAction.SHORT_DESCRIPTION, "Show/hide context variables");
@@ -146,16 +182,14 @@ public class PhonShellEditorView extends EditorView {
             
             if (variablesTreeTable == null) {
                 variablesTreeTable = new VariablesTreeTable(bindings, phonShell);
-                eastPanel.add(variablesTreeTable, BorderLayout.CENTER);
             } else {
                 variablesTreeTable.refresh(bindings);
             }
             
-            add(eastPanel, BorderLayout.EAST);
-            eastPanel.setVisible(true);
+            splitPane.setRightComponent(variablesTreeTable);
+            splitPane.setDividerLocation(0.67); // Set initial divider position to 2/3
         } else {
-            remove(eastPanel);
-            eastPanel.setVisible(false);
+            splitPane.setRightComponent(null);
         }
         revalidate();
         repaint();
@@ -173,9 +207,35 @@ public class PhonShellEditorView extends EditorView {
 
     private void runSelectedScript() {
         if(selectedScriptFile != null && selectedScriptFile.exists()) {
-            final PhonShellScriptAction scriptAction = new PhonShellScriptAction(phonShell, selectedScriptFile.getAbsolutePath(), false);
-            scriptAction.actionPerformed(null);
+            executeScript(selectedScriptFile.getAbsolutePath(), false);
         }
+    }
+    
+    /**
+     * Execute a script with the given path, optionally inserting the exec command text first
+     */
+    private void executeScript(String scriptPath, boolean useBuffer) {
+        try {
+            // Insert the exec command text into the console so user can see what's being executed
+            String execText = "::exec \"" + scriptPath + "\"";
+            if (useBuffer) {
+                execText += " > " + new File(scriptPath).getName();
+            }
+            execText += "\n";
+            
+            phonShell.getConsole().getDocument().insertString(
+                phonShell.getConsole().getDocument().getLength(),
+                execText,
+                null
+            );
+            phonShell.getConsole().setCaretPosition(phonShell.getConsole().getDocument().getLength());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        // Now execute the script
+        final PhonShellScriptAction scriptAction = new PhonShellScriptAction(phonShell, scriptPath, useBuffer);
+        scriptAction.actionPerformed(null);
     }
 
     private void showScriptMenu() {
@@ -189,9 +249,9 @@ public class PhonShellEditorView extends EditorView {
         if(recentFiles.getFileCount() > 0) {
             for(int i = 0; i < recentFiles.getFileCount(); i++) {
                 final File scriptFile = recentFiles.getFileAt(i);
-                final PhonShellScriptAction scriptAction = new PhonShellScriptAction(phonShell, scriptFile.getAbsolutePath(), false);
-                scriptAction.putValue(PhonShellScriptAction.NAME, scriptFile.getName());
-                scriptAction.putValue(PhonShellScriptAction.SHORT_DESCRIPTION, scriptFile.getAbsolutePath());
+                final PhonUIAction<Void> scriptAction = PhonUIAction.runnable(() -> executeScript(scriptFile.getAbsolutePath(), false));
+                scriptAction.putValue(PhonUIAction.NAME, scriptFile.getName());
+                scriptAction.putValue(PhonUIAction.SHORT_DESCRIPTION, scriptFile.getAbsolutePath());
                 menuBuilder.addItem(".", scriptAction);
             }
             menuBuilder.addSeparator(".", "recentFilesSep");
@@ -311,9 +371,12 @@ public class PhonShellEditorView extends EditorView {
             } else {
                 final String ext = FilenameUtils.getExtension(file.getName());
                 if(exts.contains(ext)) {
-                    final PhonShellScriptAction act = new PhonShellScriptAction(phonShell, file.getAbsolutePath(), false);
-                    act.putValue(PhonShellScriptAction.NAME, file.getName());
-                    act.putValue(PhonShellScriptAction.SHORT_DESCRIPTION, file.getAbsolutePath());
+                    final PhonUIAction<Void> act = PhonUIAction.runnable(() -> {
+                        PhonShellRecentFiles.getInstance().addToHistory(file);
+                        executeScript(file.getAbsolutePath(), false);
+                    });
+                    act.putValue(PhonUIAction.NAME, file.getName());
+                    act.putValue(PhonUIAction.SHORT_DESCRIPTION, file.getAbsolutePath());
                     JMenuItem scriptItem = new JMenuItem(act);
                     menuBuilder.addItem(".", scriptItem);
                 }

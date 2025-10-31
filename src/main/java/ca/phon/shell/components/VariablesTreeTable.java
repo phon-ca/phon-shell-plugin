@@ -318,7 +318,6 @@ public class VariablesTreeTable extends JPanel {
 
         private void loadChildren() {
             if (childrenLoaded) return;
-            childrenLoaded = true;
             children.clear();
 
             if (isRoot && bindings != null) {
@@ -326,6 +325,10 @@ public class VariablesTreeTable extends JPanel {
                 List<String> keys = new ArrayList<>(bindings.keySet());
                 Collections.sort(keys);
                 for (String key : keys) {
+                    // Filter out 'context' variable from top-level entries
+                    if ("context".equals(key)) {
+                        continue;
+                    }
                     Object val = bindings.get(key);
                     children.add(new VariablesTreeNode(key, val, bindings, false, null, this, NodeType.VARIABLE, null));
                 }
@@ -410,6 +413,9 @@ public class VariablesTreeTable extends JPanel {
                     // If we can't introspect, just don't add children
                 }
             }
+            
+            // Mark children as loaded after successful processing
+            childrenLoaded = true;
         }
 
         /**
