@@ -96,27 +96,27 @@ public class PhonShellEditorView extends EditorView {
         add(splitPane, BorderLayout.CENTER);
 
         // Add property change listener to detect when scripts/commands finish executing
-        phonShell.getModel().addPropertyChangeListener(JissModel.SCRIPT_RUNNING_PROP, new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                boolean isRunning = (Boolean) evt.getNewValue();
-                if (isRunning) {
-                    // Script started - show busy indicator
-                    if (busyLabel != null) {
-                        busyLabel.setBusy(true);
-                    }
-                } else {
-                    // Script finished - hide busy indicator and refresh variables
-                    if (busyLabel != null) {
-                        busyLabel.setBusy(false);
-                    }
-                    if (variablesVisible && variablesTreeTable != null) {
-                        Bindings bindings = phonShell.getModel().getScriptContext().getBindings(ScriptContext.ENGINE_SCOPE);
-                        variablesTreeTable.refresh(bindings);
-                    }
-                }
-            }
-        });
+//        phonShell.getModel().addPropertyChangeListener(JissModel.SCRIPT_RUNNING_PROP, new PropertyChangeListener() {
+//            @Override
+//            public void propertyChange(PropertyChangeEvent evt) {
+//                boolean isRunning = (Boolean) evt.getNewValue();
+//                if (isRunning) {
+//                    // Script started - show busy indicator
+//                    if (busyLabel != null) {
+//                        busyLabel.setBusy(true);
+//                    }
+//                } else {
+//                    // Script finished - hide busy indicator and refresh variables
+//                    if (busyLabel != null) {
+//                        busyLabel.setBusy(false);
+//                    }
+//                    if (variablesVisible && variablesTreeTable != null) {
+//                        Bindings bindings = phonShell.getModel().getScriptContext().getBindings(ScriptContext.ENGINE_SCOPE);
+//                        variablesTreeTable.refresh(bindings);
+//                    }
+//                }
+//            }
+//        });
 
         SwingUtilities.invokeLater( () -> {
             phonShell.getModel().getScriptContext()
