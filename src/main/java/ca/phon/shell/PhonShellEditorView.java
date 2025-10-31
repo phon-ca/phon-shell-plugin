@@ -145,7 +145,7 @@ public class PhonShellEditorView extends EditorView {
             Bindings bindings = phonShell.getModel().getScriptContext().getBindings(ScriptContext.ENGINE_SCOPE);
             
             if (variablesTreeTable == null) {
-                variablesTreeTable = new VariablesTreeTable(bindings);
+                variablesTreeTable = new VariablesTreeTable(bindings, phonShell);
                 eastPanel.add(variablesTreeTable, BorderLayout.CENTER);
             } else {
                 variablesTreeTable.refresh(bindings);

@@ -1,13 +1,16 @@
 package ca.phon.shell.components;
 
+import ca.phon.shell.PhonShell;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
 
 import javax.script.Bindings;
-import javax.script.ScriptContext;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.List;
@@ -19,15 +22,53 @@ import java.util.List;
 public class VariablesTreeTable extends JPanel {
     private final JXTreeTable treeTable;
     private final VariablesTreeTableModel tableModel;
+    private final PhonShell phonShell;
 
-    public VariablesTreeTable(Bindings bindings) {
+    public VariablesTreeTable(Bindings bindings, PhonShell phonShell) {
         super(new BorderLayout());
+        this.phonShell = phonShell;
         tableModel = new VariablesTreeTableModel(bindings);
         treeTable = new JXTreeTable(tableModel);
         treeTable.setRootVisible(false);
         treeTable.setShowsRootHandles(true);
+
+        // Add double-click listener
+        treeTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int row = treeTable.rowAtPoint(e.getPoint());
+                    if (row >= 0) {
+                        Object node = treeTable.getPathForRow(row).getLastPathComponent();
+                        if (node instanceof VariablesTreeNode) {
+                            String dotPath = ((VariablesTreeNode) node).getDotPath();
+                            insertTextIntoConsole(dotPath);
+                        }
+                    }
+                }
+            }
+        });
+
         JScrollPane scrollPane = new JScrollPane(treeTable);
         add(scrollPane, BorderLayout.CENTER);
+    }
+
+    /**
+     * Insert text into the PhonShell console at the cursor position
+     */
+    private void insertTextIntoConsole(String text) {
+        if (phonShell != null && phonShell.getConsole() != null) {
+            try {
+                phonShell.getConsole().getDocument().insertString(
+                    phonShell.getConsole().getCaretPosition(),
+                    text,
+                    null
+                );
+                phonShell.getConsole().requestFocus();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -52,7 +93,7 @@ public class VariablesTreeTable extends JPanel {
         public void setBindings(Bindings bindings) {
             this.bindings = bindings;
             VariablesTreeNode root = new VariablesTreeNode("Variables", null, null, true, bindings);
-            setRoot(root);
+            super.root = root;
             modelSupport.fireNewRoot();
         }
 
@@ -119,12 +160,29 @@ public class VariablesTreeTable extends JPanel {
         private final boolean isRoot;
         private final Bindings bindings;
         private final List<VariablesTreeNode> children = new ArrayList<>();
+        private final VariablesTreeNode parent;
+        private final NodeType nodeType;
+        private final Method method; // For method nodes
 
+        enum NodeType {
+            ROOT, VARIABLE, FIELD, PROPERTY, FUNCTION
+        }
+
+        // Root constructor
         public VariablesTreeNode(String name, Object value, Bindings bindings, boolean isRoot, Bindings rootBindings) {
+            this(name, value, bindings, isRoot, rootBindings, null, NodeType.ROOT, null);
+        }
+
+        // Full constructor
+        private VariablesTreeNode(String name, Object value, Bindings bindings, boolean isRoot,
+                                   Bindings rootBindings, VariablesTreeNode parent, NodeType nodeType, Method method) {
             this.name = name;
             this.value = value;
             this.isRoot = isRoot;
             this.bindings = isRoot ? rootBindings : bindings;
+            this.parent = parent;
+            this.nodeType = nodeType;
+            this.method = method;
         }
 
         public String getName() {
@@ -133,6 +191,9 @@ public class VariablesTreeTable extends JPanel {
 
         public String getValueString() {
             if (isRoot) return "";
+            if (nodeType == NodeType.FUNCTION) {
+                return getMethodSignature();
+            }
             if (value == null) return "null";
             if (isLeaf()) {
                 try {
@@ -146,12 +207,77 @@ public class VariablesTreeTable extends JPanel {
 
         public String getTypeString() {
             if (isRoot) return "";
+            if (nodeType == NodeType.FUNCTION) {
+                return "function";
+            }
             if (value == null) return "null";
             return value.getClass().getSimpleName();
         }
 
+        /**
+         * Get the method signature for function nodes
+         */
+        private String getMethodSignature() {
+            if (method == null) return "";
+
+            StringBuilder sig = new StringBuilder();
+            sig.append(method.getName()).append("(");
+
+            Class<?>[] paramTypes = method.getParameterTypes();
+            for (int i = 0; i < paramTypes.length; i++) {
+                if (i > 0) sig.append(", ");
+                sig.append(paramTypes[i].getSimpleName());
+            }
+            sig.append(")");
+
+            return sig.toString();
+        }
+
+        /**
+         * Get the dot path from root to this node
+         */
+        public String getDotPath() {
+            List<String> pathParts = new ArrayList<>();
+            VariablesTreeNode current = this;
+
+            while (current != null && !current.isRoot) {
+                if (current.nodeType == NodeType.FUNCTION) {
+                    // For functions, include the method signature
+                    pathParts.add(0, current.getMethodSignature());
+                } else if (current.nodeType == NodeType.PROPERTY) {
+                    // For properties, use the getter method call
+                    String getterName = propertyNameToGetterName(current.name);
+                    pathParts.add(0, getterName + "()");
+                } else {
+                    // For variables and fields, just use the name
+                    pathParts.add(0, current.name);
+                }
+                current = current.parent;
+            }
+
+            return String.join(".", pathParts);
+        }
+
+        /**
+         * Convert a property name back to its getter method name
+         */
+        private String propertyNameToGetterName(String propertyName) {
+            if (propertyName == null || propertyName.isEmpty()) {
+                return propertyName;
+            }
+
+            // Check if it looks like an acronym (all caps with length > 1)
+            if (propertyName.length() > 1 && propertyName.equals(propertyName.toUpperCase())) {
+                return "get" + propertyName;
+            }
+
+            // Capitalize first letter
+            return "get" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
+        }
+
         public boolean isLeaf() {
             if (isRoot) return false;
+            if (nodeType == NodeType.FUNCTION) return true; // Functions are leaves
             if (value == null) return true;
             Class<?> clazz = value.getClass();
             // Primitive types and common immutable types are leaves
@@ -201,42 +327,110 @@ public class VariablesTreeTable extends JPanel {
                 Collections.sort(keys);
                 for (String key : keys) {
                     Object val = bindings.get(key);
-                    children.add(new VariablesTreeNode(key, val, bindings, false, null));
+                    children.add(new VariablesTreeNode(key, val, bindings, false, null, this, NodeType.VARIABLE, null));
                 }
-            } else if (value != null && !isLeaf()) {
-                // Load object fields
+            } else if (value != null && !isLeaf() && nodeType != NodeType.FUNCTION) {
+                // Load object fields, properties, and methods
                 try {
                     Class<?> clazz = value.getClass();
+
+                    // Collect fields
                     List<Field> fields = new ArrayList<>();
-                    
-                    // Get all fields including inherited ones
                     Class<?> currentClass = clazz;
                     while (currentClass != null && currentClass != Object.class) {
                         fields.addAll(Arrays.asList(currentClass.getDeclaredFields()));
                         currentClass = currentClass.getSuperclass();
                     }
-                    
-                    // Sort fields by name
                     Collections.sort(fields, Comparator.comparing(Field::getName));
                     
                     for (Field field : fields) {
-                        // Skip static fields
                         if (Modifier.isStatic(field.getModifiers())) {
                             continue;
                         }
-                        
                         field.setAccessible(true);
                         try {
                             Object fieldValue = field.get(value);
-                            children.add(new VariablesTreeNode(field.getName(), fieldValue, bindings, false, null));
+                            children.add(new VariablesTreeNode(field.getName(), fieldValue, bindings, false, null, this, NodeType.FIELD, null));
                         } catch (IllegalAccessException e) {
-                            children.add(new VariablesTreeNode(field.getName(), "<inaccessible>", bindings, false, null));
+                            children.add(new VariablesTreeNode(field.getName(), "<inaccessible>", bindings, false, null, this, NodeType.FIELD, null));
                         }
                     }
+
+                    // Collect methods
+                    List<Method> methods = new ArrayList<>();
+                    currentClass = clazz;
+                    while (currentClass != null && currentClass != Object.class) {
+                        methods.addAll(Arrays.asList(currentClass.getDeclaredMethods()));
+                        currentClass = currentClass.getSuperclass();
+                    }
+
+                    // Process getters as properties and other methods as functions
+                    Map<String, Method> getterMethods = new TreeMap<>();
+                    Map<String, Method> otherMethods = new TreeMap<>();
+
+                    for (Method m : methods) {
+                        if (Modifier.isStatic(m.getModifiers())) {
+                            continue;
+                        }
+
+                        String methodName = m.getName();
+
+                        // Check if it's a getter (getXxx with no parameters and non-void return)
+                        if (methodName.startsWith("get") && methodName.length() > 3
+                                && m.getParameterCount() == 0 && m.getReturnType() != void.class) {
+                            String propertyName = getterNameToPropertyName(methodName);
+                            getterMethods.put(propertyName, m);
+                        } else {
+                            // All other methods (including isXxx, hasXxx, etc.)
+                            otherMethods.put(methodName, m);
+                        }
+                    }
+
+                    // Add properties (from getters)
+                    for (Map.Entry<String, Method> entry : getterMethods.entrySet()) {
+                        String propertyName = entry.getKey();
+                        Method getter = entry.getValue();
+                        try {
+                            getter.setAccessible(true);
+                            Object propertyValue = getter.invoke(value);
+                            children.add(new VariablesTreeNode(propertyName, propertyValue, bindings, false, null, this, NodeType.PROPERTY, getter));
+                        } catch (Exception e) {
+                            children.add(new VariablesTreeNode(propertyName, "<error>", bindings, false, null, this, NodeType.PROPERTY, getter));
+                        }
+                    }
+
+                    // Add functions (other methods)
+                    for (Map.Entry<String, Method> entry : otherMethods.entrySet()) {
+                        String methodName = entry.getKey();
+                        Method method = entry.getValue();
+                        children.add(new VariablesTreeNode(methodName, null, bindings, false, null, this, NodeType.FUNCTION, method));
+                    }
+
                 } catch (Exception e) {
                     // If we can't introspect, just don't add children
                 }
             }
+        }
+
+        /**
+         * Convert getter method name to property name
+         * e.g., getName -> name, getURL -> URL (for acronyms)
+         */
+        private String getterNameToPropertyName(String getterName) {
+            if (!getterName.startsWith("get") || getterName.length() <= 3) {
+                return getterName;
+            }
+
+            String withoutGet = getterName.substring(3);
+
+            // Check if the remaining part is all uppercase (acronym)
+            if (withoutGet.length() > 1 && withoutGet.equals(withoutGet.toUpperCase())) {
+                // It's an acronym like URL, ID, etc. - keep it as is
+                return withoutGet;
+            }
+
+            // Normal case: lowercase the first character
+            return Character.toLowerCase(withoutGet.charAt(0)) + withoutGet.substring(1);
         }
     }
 }
