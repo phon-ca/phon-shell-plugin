@@ -1,5 +1,7 @@
 package ca.phon.shell;
 
+import ca.hedlund.jiss.ProcessorEvent;
+import ca.hedlund.jiss.ProcessorListener;
 import ca.phon.app.session.editor.EditorView;
 import ca.phon.app.session.editor.SessionEditor;
 import ca.phon.project.Project;
@@ -96,27 +98,25 @@ public class PhonShellEditorView extends EditorView {
         add(splitPane, BorderLayout.CENTER);
 
         // Add property change listener to detect when scripts/commands finish executing
-//        phonShell.getModel().addPropertyChangeListener(JissModel.SCRIPT_RUNNING_PROP, new PropertyChangeListener() {
-//            @Override
-//            public void propertyChange(PropertyChangeEvent evt) {
-//                boolean isRunning = (Boolean) evt.getNewValue();
-//                if (isRunning) {
-//                    // Script started - show busy indicator
-//                    if (busyLabel != null) {
-//                        busyLabel.setBusy(true);
-//                    }
-//                } else {
-//                    // Script finished - hide busy indicator and refresh variables
-//                    if (busyLabel != null) {
-//                        busyLabel.setBusy(false);
-//                    }
-//                    if (variablesVisible && variablesTreeTable != null) {
-//                        Bindings bindings = phonShell.getModel().getScriptContext().getBindings(ScriptContext.ENGINE_SCOPE);
-//                        variablesTreeTable.refresh(bindings);
-//                    }
-//                }
-//            }
-//        });
+        phonShell.getModel().getProcessor().addProcessorListener(new ProcessorListener() {
+            @Override
+            public void processingStarted(ProcessorEvent processorEvent) {
+                SwingUtilities.invokeLater( () -> {
+                    busyLabel.setBusy(true);
+                });
+            }
+
+            @Override
+            public void processingEnded(ProcessorEvent processorEvent) {
+                SwingUtilities.invokeLater( () -> {
+                    busyLabel.setBusy(false);
+                    if (variablesVisible && variablesTreeTable != null) {
+                        Bindings bindings = phonShell.getModel().getScriptContext().getBindings(ScriptContext.ENGINE_SCOPE);
+                        variablesTreeTable.refresh(bindings);
+                    }
+                });
+            }
+        });
 
         SwingUtilities.invokeLater( () -> {
             phonShell.getModel().getScriptContext()

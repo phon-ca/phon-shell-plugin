@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.AbstractCollection;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,11 +30,12 @@ import javax.swing.SwingUtilities;
 
 import ca.hedlund.jiss.JissModel;
 import ca.hedlund.jiss.JissPreprocessor;
+import ca.hedlund.jiss.preprocessor.AbstractPreprocessor;
 import ca.phon.app.log.BufferPanel;
 import ca.phon.app.log.BufferWindow;
 import ca.phon.app.log.LogBuffer;
 
-public class BufferRedirectPreprocessor implements JissPreprocessor {
+public class BufferRedirectPreprocessor extends AbstractPreprocessor {
 	
 	private static final Logger LOGGER = Logger
 			.getLogger(BufferRedirectPreprocessor.class.getName());
