@@ -12,6 +12,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -117,6 +118,10 @@ public class VariablesTreeTable extends JPanel {
             ICON_CACHE.put(VariablesTreeNode.NodeType.FUNCTION,
                 iconManager.getFontIcon(IconManager.GoogleMaterialDesignIconsFontName,
                     "functions", IconSize.SMALL, new Color(33, 150, 243)));
+
+            ICON_CACHE.put(VariablesTreeNode.NodeType.ARRAY,
+                iconManager.getFontIcon(IconManager.GoogleMaterialDesignIconsFontName,
+                    "data_array", IconSize.SMALL, new Color(255, 87, 34)));
         }
 
         @Override
@@ -222,19 +227,20 @@ public class VariablesTreeTable extends JPanel {
         private final VariablesTreeNode parent;
         private final NodeType nodeType;
         private final Method method; // For method nodes
+        private final Integer arrayIndex; // For array element nodes
 
         enum NodeType {
-            ROOT, VARIABLE, FIELD, PROPERTY, FUNCTION
+            ROOT, VARIABLE, FIELD, PROPERTY, FUNCTION, ARRAY
         }
 
         // Root constructor
         public VariablesTreeNode(String name, Object value, Bindings bindings, boolean isRoot, Bindings rootBindings) {
-            this(name, value, bindings, isRoot, rootBindings, null, NodeType.ROOT, null);
+            this(name, value, bindings, isRoot, rootBindings, null, NodeType.ROOT, null, null);
         }
 
         // Full constructor
         private VariablesTreeNode(String name, Object value, Bindings bindings, boolean isRoot,
-                                   Bindings rootBindings, VariablesTreeNode parent, NodeType nodeType, Method method) {
+                                   Bindings rootBindings, VariablesTreeNode parent, NodeType nodeType, Method method, Integer arrayIndex) {
             this.name = name;
             this.value = value;
             this.isRoot = isRoot;
@@ -242,6 +248,7 @@ public class VariablesTreeTable extends JPanel {
             this.parent = parent;
             this.nodeType = nodeType;
             this.method = method;
+            this.arrayIndex = arrayIndex;
         }
 
         public String getName() {
@@ -254,6 +261,10 @@ public class VariablesTreeTable extends JPanel {
                 return getMethodSignature();
             }
             if (value == null) return "null";
+            if (value.getClass().isArray()) {
+                int length = Array.getLength(value);
+                return "[" + length + " element" + (length != 1 ? "s" : "") + "]";
+            }
             if (isLeaf()) {
                 try {
                     return value.toString();
@@ -270,6 +281,9 @@ public class VariablesTreeTable extends JPanel {
                 return "function";
             }
             if (value == null) return "null";
+            if (value.getClass().isArray()) {
+                return value.getClass().getComponentType().getSimpleName() + "[]";
+            }
             return value.getClass().getSimpleName();
         }
 
@@ -307,6 +321,11 @@ public class VariablesTreeTable extends JPanel {
                     // For properties, use the getter method call
                     String getterName = propertyNameToGetterName(current.name);
                     pathParts.add(0, getterName + "()");
+                } else if (current.nodeType == NodeType.ARRAY && current.arrayIndex != null) {
+                    // For array elements, use bracket notation
+                    pathParts.set(0, pathParts.get(0) + "[" + current.arrayIndex + "]");
+                    current = current.parent;
+                    continue;
                 } else {
                     // For variables and fields, just use the name
                     pathParts.add(0, current.name);
@@ -339,6 +358,8 @@ public class VariablesTreeTable extends JPanel {
             if (nodeType == NodeType.FUNCTION) return true; // Functions are leaves
             if (value == null) return true;
             Class<?> clazz = value.getClass();
+            // Arrays are not leaves
+            if (clazz.isArray()) return false;
             // Primitive types and common immutable types are leaves
             if (clazz.isPrimitive() 
                     || value instanceof String 
@@ -389,7 +410,20 @@ public class VariablesTreeTable extends JPanel {
                         continue;
                     }
                     Object val = bindings.get(key);
-                    children.add(new VariablesTreeNode(key, val, bindings, false, null, this, NodeType.VARIABLE, null));
+                    NodeType type = (val != null && val.getClass().isArray()) ? NodeType.ARRAY : NodeType.VARIABLE;
+                    children.add(new VariablesTreeNode(key, val, bindings, false, null, this, type, null, null));
+                }
+            } else if (value != null && value.getClass().isArray()) {
+                // Load array elements
+                int length = Array.getLength(value);
+                for (int i = 0; i < length; i++) {
+                    try {
+                        Object element = Array.get(value, i);
+                        NodeType type = (element != null && element.getClass().isArray()) ? NodeType.ARRAY : NodeType.FIELD;
+                        children.add(new VariablesTreeNode("[" + i + "]", element, bindings, false, null, this, type, null, i));
+                    } catch (Exception e) {
+                        children.add(new VariablesTreeNode("[" + i + "]", "<error>", bindings, false, null, this, NodeType.FIELD, null, i));
+                    }
                 }
             } else if (value != null && !isLeaf() && nodeType != NodeType.FUNCTION) {
                 // Load object fields, properties, and methods
@@ -414,9 +448,10 @@ public class VariablesTreeTable extends JPanel {
                         }
                         try {
                             Object fieldValue = field.get(value);
-                            children.add(new VariablesTreeNode(field.getName(), fieldValue, bindings, false, null, this, NodeType.FIELD, null));
+                            NodeType type = (fieldValue != null && fieldValue.getClass().isArray()) ? NodeType.ARRAY : NodeType.FIELD;
+                            children.add(new VariablesTreeNode(field.getName(), fieldValue, bindings, false, null, this, type, null, null));
                         } catch (IllegalAccessException e) {
-//                            children.add(new VariablesTreeNode(field.getName(), "<inaccessible>", bindings, false, null, this, NodeType.FIELD, null));
+//                            children.add(new VariablesTreeNode(field.getName(), "<inaccessible>", bindings, false, null, this, NodeType.FIELD, null, null));
                         }
                     }
 
@@ -462,9 +497,10 @@ public class VariablesTreeTable extends JPanel {
                         try {
 //                            getter.setAccessible(true);
                             Object propertyValue = getter.invoke(value);
-                            children.add(new VariablesTreeNode(propertyName, propertyValue, bindings, false, null, this, NodeType.PROPERTY, getter));
+                            NodeType type = (propertyValue != null && propertyValue.getClass().isArray()) ? NodeType.ARRAY : NodeType.PROPERTY;
+                            children.add(new VariablesTreeNode(propertyName, propertyValue, bindings, false, null, this, type, getter, null));
                         } catch (Exception e) {
-//                            children.add(new VariablesTreeNode(propertyName, "<error>", bindings, false, null, this, NodeType.PROPERTY, getter));
+//                            children.add(new VariablesTreeNode(propertyName, "<error>", bindings, false, null, this, NodeType.PROPERTY, getter, null));
                         }
                     }
 
@@ -475,7 +511,7 @@ public class VariablesTreeTable extends JPanel {
                         if(Modifier.isStatic(method.getModifiers())) {
                             continue;
                         }
-                        children.add(new VariablesTreeNode(methodName, null, bindings, false, null, this, NodeType.FUNCTION, method));
+                        children.add(new VariablesTreeNode(methodName, null, bindings, false, null, this, NodeType.FUNCTION, method, null));
                     }
 
                 } catch (Exception e) {
