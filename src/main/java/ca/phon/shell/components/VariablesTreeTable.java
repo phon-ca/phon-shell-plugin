@@ -1,11 +1,14 @@
 package ca.phon.shell.components;
 
 import ca.phon.shell.PhonShell;
+import ca.phon.util.icons.IconManager;
+import ca.phon.util.icons.IconSize;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
 
 import javax.script.Bindings;
 import javax.swing.*;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -32,6 +35,9 @@ public class VariablesTreeTable extends JPanel {
         treeTable.setRootVisible(false);
         treeTable.setShowsRootHandles(true);
 
+        // Set custom renderer with Material Icons
+        treeTable.setTreeCellRenderer(new VariablesTreeCellRenderer());
+
         // Add double-click listener
         treeTable.addMouseListener(new MouseAdapter() {
             @Override
@@ -48,6 +54,11 @@ public class VariablesTreeTable extends JPanel {
                 }
             }
         });
+
+        // example of getting an icon
+        ImageIcon materialIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName,
+                "code_braces", IconSize.SMALL, Color.DARK_GRAY);
+
 
         JScrollPane scrollPane = new JScrollPane(treeTable);
         add(scrollPane, BorderLayout.CENTER);
@@ -76,6 +87,54 @@ public class VariablesTreeTable extends JPanel {
      */
     public void refresh(Bindings bindings) {
         tableModel.setBindings(bindings);
+    }
+
+    /**
+     * Custom cell renderer for the tree table with Google Material Design Icons
+     */
+    static class VariablesTreeCellRenderer extends DefaultTreeCellRenderer {
+        private static final Map<VariablesTreeNode.NodeType, ImageIcon> ICON_CACHE = new HashMap<>();
+        private static final IconManager iconManager = IconManager.getInstance();
+
+        static {
+            // Load Material Design Icons for each node type
+            ICON_CACHE.put(VariablesTreeNode.NodeType.ROOT,
+                iconManager.getFontIcon(IconManager.GoogleMaterialDesignIconsFontName,
+                    "folder", IconSize.SMALL, new Color(100, 150, 200)));
+
+            ICON_CACHE.put(VariablesTreeNode.NodeType.VARIABLE,
+                iconManager.getFontIcon(IconManager.GoogleMaterialDesignIconsFontName,
+                    "data_object", IconSize.SMALL, new Color(76, 175, 80)));
+
+            ICON_CACHE.put(VariablesTreeNode.NodeType.FIELD,
+                iconManager.getFontIcon(IconManager.GoogleMaterialDesignIconsFontName,
+                    "label_important", IconSize.SMALL, new Color(255, 152, 0)));
+
+            ICON_CACHE.put(VariablesTreeNode.NodeType.PROPERTY,
+                iconManager.getFontIcon(IconManager.GoogleMaterialDesignIconsFontName,
+                    "label", IconSize.SMALL, new Color(156, 39, 176)));
+
+            ICON_CACHE.put(VariablesTreeNode.NodeType.FUNCTION,
+                iconManager.getFontIcon(IconManager.GoogleMaterialDesignIconsFontName,
+                    "functions", IconSize.SMALL, new Color(33, 150, 243)));
+        }
+
+        @Override
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected,
+                                                       boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+
+            if (value instanceof VariablesTreeNode) {
+                VariablesTreeNode node = (VariablesTreeNode) value;
+                ImageIcon icon = ICON_CACHE.get(node.nodeType);
+                if (icon != null) {
+                    setIcon(icon);
+                }
+                setText(node.name);
+            }
+
+            return this;
+        }
     }
 
     /**
