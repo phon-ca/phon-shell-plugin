@@ -252,9 +252,17 @@ public class PhonShellEditorView extends EditorView {
                 final PhonUIAction<Void> scriptAction = PhonUIAction.runnable(() -> executeScript(scriptFile.getAbsolutePath(), false));
                 scriptAction.putValue(PhonUIAction.NAME, scriptFile.getName());
                 scriptAction.putValue(PhonUIAction.SHORT_DESCRIPTION, scriptFile.getAbsolutePath());
-                menuBuilder.addItem(".", scriptAction);
+                menuBuilder.addItem(".", scriptAction).setEnabled(scriptFile.exists());
             }
             menuBuilder.addSeparator(".", "recentFilesSep");
+            // add item to clear recent files
+            final PhonUIAction<Void> clearRecentFilesAct = PhonUIAction.runnable(() -> {
+                recentFiles.clearHistory();
+                setSelectedScriptFile(null);
+            });
+            clearRecentFilesAct.putValue(PhonUIAction.NAME, "Clear recent scripts");
+            menuBuilder.addItem(".", clearRecentFilesAct);
+            menuBuilder.addSeparator(".", "recentFilesEndSep");
         }
 
         List<String> exts = new ArrayList<>();

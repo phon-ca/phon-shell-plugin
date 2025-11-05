@@ -350,12 +350,14 @@ public class VariablesTreeTable extends JPanel {
                         if (Modifier.isStatic(field.getModifiers())) {
                             continue;
                         }
-                        field.setAccessible(true);
+                        if(Modifier.isPrivate(field.getModifiers())) {
+                            continue;
+                        }
                         try {
                             Object fieldValue = field.get(value);
                             children.add(new VariablesTreeNode(field.getName(), fieldValue, bindings, false, null, this, NodeType.FIELD, null));
                         } catch (IllegalAccessException e) {
-                            children.add(new VariablesTreeNode(field.getName(), "<inaccessible>", bindings, false, null, this, NodeType.FIELD, null));
+//                            children.add(new VariablesTreeNode(field.getName(), "<inaccessible>", bindings, false, null, this, NodeType.FIELD, null));
                         }
                     }
 
@@ -375,7 +377,9 @@ public class VariablesTreeTable extends JPanel {
                         if (Modifier.isStatic(m.getModifiers())) {
                             continue;
                         }
-
+                        if(Modifier.isPrivate(m.getModifiers())) {
+                            continue;
+                        }
                         String methodName = m.getName();
 
                         // Check if it's a getter (getXxx with no parameters and non-void return)
@@ -393,12 +397,15 @@ public class VariablesTreeTable extends JPanel {
                     for (Map.Entry<String, Method> entry : getterMethods.entrySet()) {
                         String propertyName = entry.getKey();
                         Method getter = entry.getValue();
+                        if(Modifier.isPrivate(getter.getModifiers())) {
+                            continue;
+                        }
                         try {
-                            getter.setAccessible(true);
+//                            getter.setAccessible(true);
                             Object propertyValue = getter.invoke(value);
                             children.add(new VariablesTreeNode(propertyName, propertyValue, bindings, false, null, this, NodeType.PROPERTY, getter));
                         } catch (Exception e) {
-                            children.add(new VariablesTreeNode(propertyName, "<error>", bindings, false, null, this, NodeType.PROPERTY, getter));
+//                            children.add(new VariablesTreeNode(propertyName, "<error>", bindings, false, null, this, NodeType.PROPERTY, getter));
                         }
                     }
 
@@ -406,6 +413,9 @@ public class VariablesTreeTable extends JPanel {
                     for (Map.Entry<String, Method> entry : otherMethods.entrySet()) {
                         String methodName = entry.getKey();
                         Method method = entry.getValue();
+                        if(Modifier.isStatic(method.getModifiers())) {
+                            continue;
+                        }
                         children.add(new VariablesTreeNode(methodName, null, bindings, false, null, this, NodeType.FUNCTION, method));
                     }
 
