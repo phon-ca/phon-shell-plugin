@@ -1,7 +1,11 @@
 package ca.phon.shell;
 
+import ca.hedlund.jiss.JissModel;
+import ca.hedlund.jiss.Processor;
 import ca.hedlund.jiss.ProcessorEvent;
 import ca.hedlund.jiss.ProcessorListener;
+import ca.hedlund.jiss.ui.bindings.Cancel;
+import ca.phon.app.log.LogUtil;
 import ca.phon.app.session.editor.EditorView;
 import ca.phon.app.session.editor.SessionEditor;
 import ca.phon.project.Project;
@@ -13,17 +17,17 @@ import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.FlatButton;
 import ca.phon.ui.IconStrip;
 import ca.phon.ui.action.PhonUIAction;
+import ca.phon.ui.fonts.FontPreferences;
 import ca.phon.ui.menu.MenuBuilder;
 import ca.phon.ui.nativedialogs.NativeDialogEvent;
 import ca.phon.ui.nativedialogs.NativeDialogs;
 import ca.phon.ui.nativedialogs.OpenDialogProperties;
+import ca.phon.ui.text.PromptedTextField;
 import ca.phon.util.PrefHelper;
-import ca.phon.util.RecentFiles;
 import ca.phon.util.icons.IconManager;
 import ca.phon.util.icons.IconSize;
 import org.apache.commons.io.FilenameUtils;
 import org.jdesktop.swingx.JXBusyLabel;
-import ca.hedlund.jiss.JissModel;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -31,8 +35,6 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,9 +56,14 @@ public class PhonShellEditorView extends EditorView {
     private FlatButton variablesButton;
     private JXBusyLabel busyLabel;
 
+    private JCheckBox outputToBufferBox;
+    private PromptedTextField outputBufferNameField;
+
     private VariablesTreeTable variablesTreeTable;
     private JSplitPane splitPane;
     private boolean variablesVisible = false;
+
+    private boolean isExecuting = false;
 
     private PhonShellRecentFiles recentFiles;
 
@@ -70,6 +77,7 @@ public class PhonShellEditorView extends EditorView {
     private void init() {
         setLayout(new BorderLayout());
         phonShell = new PhonShell();
+        phonShell.getConsole().setFont(FontPreferences.getMonospaceFont());
 
         selectedScriptFile = recentFiles.getFileCount() > 0 ? recentFiles.getFileAt(0) : null;
         recentFiles.addRecentFilesListener( () -> {
@@ -98,23 +106,46 @@ public class PhonShellEditorView extends EditorView {
         add(splitPane, BorderLayout.CENTER);
 
         // Add property change listener to detect when scripts/commands finish executing
-        phonShell.getModel().getProcessor().addProcessorListener(new ProcessorListener() {
+        final ProcessorListener processorListener = new ProcessorListener() {
             @Override
             public void processingStarted(ProcessorEvent processorEvent) {
+                LogUtil.info("Script execution started");
                 SwingUtilities.invokeLater( () -> {
+                    isExecuting = true;
                     busyLabel.setBusy(true);
+                    runScriptButton.setIconName("stop");
+                    runScriptButton.setEnabled(true);
+                    runScriptButton.getAction().putValue(PhonUIAction.SHORT_DESCRIPTION, "Stop script execution");
+                    runScriptButton.repaint();
                 });
             }
 
             @Override
             public void processingEnded(ProcessorEvent processorEvent) {
+                LogUtil.info("Script execution ended");
                 SwingUtilities.invokeLater( () -> {
+                    isExecuting = false;
                     busyLabel.setBusy(false);
+                    runScriptButton.setEnabled(selectedScriptFile != null);
+                    runScriptButton.setIconName("play_arrow");
+                    runScriptButton.getAction().putValue(PhonUIAction.SHORT_DESCRIPTION, "Run selected script");
+                    runScriptButton.repaint();
                     if (variablesVisible && variablesTreeTable != null) {
                         Bindings bindings = phonShell.getModel().getScriptContext().getBindings(ScriptContext.ENGINE_SCOPE);
                         variablesTreeTable.refresh(bindings);
                     }
                 });
+            }
+        };
+        phonShell.getModel().getProcessor().addProcessorListener(processorListener);
+        phonShell.getModel().addPropertyChangeListener(JissModel.PROCESSOR_PROP, (e) -> {
+            Processor oldProcessor = (Processor)e.getOldValue();
+            if(oldProcessor != null) {
+                oldProcessor.removeProcessorListener(processorListener);
+            }
+            Processor processor = (Processor)e.getNewValue();
+            if(processor != null) {
+                processor.addProcessorListener(processorListener);
             }
         });
 
@@ -148,9 +179,12 @@ public class PhonShellEditorView extends EditorView {
         selectScriptAction.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
         selectScriptButton = new FlatButton(selectScriptAction);
         selectScriptButton.setHorizontalTextPosition(SwingConstants.LEFT);
+        selectScriptButton.setPreferredSize(
+                new Dimension(300, selectScriptButton.getPreferredSize().height)
+        );
         iconStrip.add(selectScriptButton, IconStrip.IconStripPosition.LEFT);
 
-        final PhonUIAction<Void> runScriptAction = PhonUIAction.runnable(this::runSelectedScript);
+        final PhonUIAction<Void> runScriptAction = PhonUIAction.runnable(this::runOrStopScript);
         runScriptAction.putValue(PhonUIAction.SHORT_DESCRIPTION, "Run selected script");
         runScriptAction.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
         runScriptAction.putValue(FlatButton.ICON_NAME_PROP, "play_arrow");
@@ -160,9 +194,22 @@ public class PhonShellEditorView extends EditorView {
         iconStrip.add(runScriptButton, IconStrip.IconStripPosition.LEFT);
 
         // Add busy label to show script execution progress
-        busyLabel = new JXBusyLabel();
+        busyLabel = new JXBusyLabel(new Dimension(IconSize.SMALL.getWidth(), IconSize.SMALL.getHeight()));
         busyLabel.setBusy(false);
         iconStrip.add(busyLabel, IconStrip.IconStripPosition.LEFT);
+
+        outputToBufferBox = new JCheckBox("Send output to buffer");
+        outputToBufferBox.setSelected(false);
+        iconStrip.add(outputToBufferBox, IconStrip.IconStripPosition.LEFT);
+        outputToBufferBox.addActionListener( (e) -> {
+            outputBufferNameField.setEnabled(outputToBufferBox.isSelected());
+        });
+
+        outputBufferNameField = new PromptedTextField("Buffer name");
+        outputBufferNameField.setColumns(20);
+        iconStrip.add(outputBufferNameField, IconStrip.IconStripPosition.LEFT);
+        outputBufferNameField.setEnabled(false);
+
 
         // Variables button (right side)
         final PhonUIAction<Void> variablesAction = PhonUIAction.runnable(this::toggleVariablesTreeTable);
@@ -205,21 +252,36 @@ public class PhonShellEditorView extends EditorView {
         runScriptButton.getAction().setEnabled(selectedScriptFile != null);
     }
 
+    private void runOrStopScript() {
+        if (isExecuting) {
+            stopScriptExecution();
+        } else {
+            runSelectedScript();
+        }
+    }
+
     private void runSelectedScript() {
         if(selectedScriptFile != null && selectedScriptFile.exists()) {
-            executeScript(selectedScriptFile.getAbsolutePath(), false);
+            final String bufferName = outputBufferNameField.getText().trim().isEmpty()
+                    ? "phonshell" : outputBufferNameField.getText().trim();
+            executeScript(selectedScriptFile.getAbsolutePath(), outputToBufferBox.isSelected(), bufferName);
         }
+    }
+
+    private void stopScriptExecution() {
+        final Cancel cancel = new Cancel(phonShell.getConsole());
+        cancel.actionPerformed(null);
     }
     
     /**
      * Execute a script with the given path, optionally inserting the exec command text first
      */
-    private void executeScript(String scriptPath, boolean useBuffer) {
+    private void executeScript(String scriptPath, boolean useBuffer, String bufferName) {
         try {
             // Insert the exec command text into the console so user can see what's being executed
             String execText = "::exec \"" + scriptPath + "\"";
             if (useBuffer) {
-                execText += " > " + new File(scriptPath).getName();
+                execText += " > " + bufferName;
             }
             execText += "\n";
             
@@ -232,9 +294,11 @@ public class PhonShellEditorView extends EditorView {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        
+
+        setSelectedScriptFile(new File(scriptPath));
+
         // Now execute the script
-        final PhonShellScriptAction scriptAction = new PhonShellScriptAction(phonShell, scriptPath, useBuffer);
+        final PhonShellScriptAction scriptAction = new PhonShellScriptAction(phonShell, scriptPath, useBuffer, bufferName);
         scriptAction.actionPerformed(null);
     }
 
@@ -249,7 +313,9 @@ public class PhonShellEditorView extends EditorView {
         if(recentFiles.getFileCount() > 0) {
             for(int i = 0; i < recentFiles.getFileCount(); i++) {
                 final File scriptFile = recentFiles.getFileAt(i);
-                final PhonUIAction<Void> scriptAction = PhonUIAction.runnable(() -> executeScript(scriptFile.getAbsolutePath(), false));
+                final String bufferName = outputBufferNameField.getText().trim().isEmpty()
+                        ? "phonshell" : outputBufferNameField.getText().trim();
+                final PhonUIAction<Void> scriptAction = PhonUIAction.runnable(() -> executeScript(scriptFile.getAbsolutePath(), outputToBufferBox.isSelected(), bufferName));
                 scriptAction.putValue(PhonUIAction.NAME, scriptFile.getName());
                 scriptAction.putValue(PhonUIAction.SHORT_DESCRIPTION, scriptFile.getAbsolutePath());
                 menuBuilder.addItem(".", scriptAction).setEnabled(scriptFile.exists());
@@ -381,7 +447,9 @@ public class PhonShellEditorView extends EditorView {
                 if(exts.contains(ext)) {
                     final PhonUIAction<Void> act = PhonUIAction.runnable(() -> {
                         PhonShellRecentFiles.getInstance().addToHistory(file);
-                        executeScript(file.getAbsolutePath(), false);
+                        final String bufferName = outputBufferNameField.getText().trim().isEmpty()
+                                ? "phonshell" : outputBufferNameField.getText().trim();
+                        executeScript(file.getAbsolutePath(), outputToBufferBox.isSelected(), bufferName);
                     });
                     act.putValue(PhonUIAction.NAME, file.getName());
                     act.putValue(PhonUIAction.SHORT_DESCRIPTION, file.getAbsolutePath());

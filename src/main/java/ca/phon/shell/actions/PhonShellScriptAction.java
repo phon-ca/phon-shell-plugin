@@ -36,16 +36,24 @@ public class PhonShellScriptAction extends HookableAction {
 	
 	private boolean useBuffer = false;
 
+    private final String bufferName;
+
     private PhonShell phonShellContext;
 	
 	public PhonShellScriptAction(String scriptLocation) {
 		this.scriptLocation = scriptLocation;
+        this.bufferName = (new File(scriptLocation).getName());
 	}
 
     public PhonShellScriptAction(PhonShell phonShellContext, String scriptLocation, boolean useBuffer) {
+        this(phonShellContext, scriptLocation, useBuffer, "phonshell");
+    }
+
+    public PhonShellScriptAction(PhonShell phonShellContext, String scriptLocation, boolean useBuffer, String bufferName) {
         this.phonShellContext = phonShellContext;
         this.scriptLocation = scriptLocation;
         this.useBuffer = useBuffer;
+        this.bufferName = bufferName;
     }
 	
 	public boolean isUseBuffer() {
@@ -82,7 +90,7 @@ public class PhonShellScriptAction extends HookableAction {
 		final StringBuilder sb = new StringBuilder();
 		sb.append("::exec ").append('\"').append(scriptLocation).append('\"');
 		if(useBuffer) {
-			sb.append(" > ").append(getValue(NAME));
+			sb.append(" > ").append(bufferName);
 		}
 		return sb.toString();
 	}
