@@ -8,11 +8,24 @@
 
     <distributionManagement>
         <repository>
-            <id>github</id>
+            <id>github-speechmetrics</id>
             <name>GitHub phon-ca Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/phon-ca/phon-shell-plugin</url>
+            <url>https://maven.pkg.github.com/speechmetrics/phon-shell-plugin</url>
         </repository>
     </distributionManagement>
+
+    <repositories>
+	<repository>
+		<id>github-speechmetrics</id>
+		<name>GitHub phon-ca Apache Maven Packages</name>
+		<url>https://maven.pkg.github.com/speechmetrics/*</url>
+	</repository>
+	<repository>
+		<id>github-ghedlund</id>
+		<name>GitHub ghedlund Apache Maven Packages</name>
+		<url>https://maven.pkg.github.com/ghedlund/*</url>
+	</repository>
+    </repositories>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
